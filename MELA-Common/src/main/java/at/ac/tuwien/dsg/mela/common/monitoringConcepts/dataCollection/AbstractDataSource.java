@@ -29,14 +29,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement.Monitore
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
  *
  */
-public abstract class AbstractDataSource {
+public interface AbstractDataSource {
 
-    //configuration parameters sent as key-value pairs and specified in the DataSources configuration file are injected here
-    protected Map<String, String> configuration;
-
-    protected AbstractDataSource(Map<String, String> configuration) {
-        this.configuration = configuration;
-    }
-
-    public abstract MonitoringData getMonitoringData() throws DataAccessException;
+    public MonitoringData getMonitoringData() throws DataAccessException;
 }

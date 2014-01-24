@@ -39,10 +39,5 @@ public class ResourceLoader {
         return new FileInputStream("./config/Config.properties");
     }
  
-    public static InputStream getLog4JConfigurationStream() throws FileNotFoundException {
-        return new FileInputStream("./config/Log4j.properties");
-    }
-    
-    
-    
+
 }

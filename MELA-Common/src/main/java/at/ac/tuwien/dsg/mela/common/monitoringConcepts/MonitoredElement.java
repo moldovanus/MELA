@@ -28,7 +28,6 @@ import java.util.List;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
- *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "MonitoredElement")
@@ -36,12 +35,13 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
 
     @XmlAttribute(name = "id", required = true)
     private String id;
-//    @XmlAttribute(name = "ip", required = false)
+
     @XmlAttribute(name = "name", required = true)
-//    private String ip;
     private String name;
+
     @XmlAttribute(name = "level", required = true)
     private MonitoredElementLevel level;
+
     @XmlElement(name = "MonitoredElement", required = false)
     private Collection<MonitoredElement> containedElements;
 
@@ -70,6 +70,22 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
         this.id = id;
     }
 
+    public MonitoredElement withId(String id) {
+        this.id = id;
+        return this;
+    }
+
+    public MonitoredElement withName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public MonitoredElement withLevel(MonitoredElementLevel level) {
+        this.level = level;
+        return this;
+    }
+
+
     public void addElement(MonitoredElement MonitoredElement) {
         containedElements.add(MonitoredElement);
     }
@@ -78,13 +94,6 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
         containedElements.remove(MonitoredElement);
     }
 
-//    public String getIp() {
-//        return ip;
-//    }
-//
-//    public void setIp(String ip) {
-//        this.ip = ip;
-//    }
     public MonitoredElementLevel getLevel() {
         return level;
     }
@@ -132,8 +141,6 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
         if (id != null ? !id.equals(that.id) : that.id != null) {
             return false;
         }
-//        if (ip != null ? !ip.equals(that.ip) : that.ip != null) return false;
-//        if (name != null ? !name.equals(that.name) : that.name != null) return false;
 
         //TODO: add also level when checking for equality
         return true;
@@ -159,9 +166,11 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
 
         //        private ApplicationNodeMonitoredData root;
         private List<MonitoredElement> elements;
+
         private Iterator<MonitoredElement> elementsIterator;
 
         {
+            //todo why is this type of initialization used?
             elements = new ArrayList<MonitoredElement>();
         }
 
@@ -200,7 +209,6 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
     }
 
     /**
-     *
      * @return a deep clone of all the serviceStructure element, EXCEPT VM
      * LEVEL, as VM level is considered volatile and updated by the monitoring
      * system.
@@ -223,6 +231,11 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
         return newMonitoredElement;
 
     }
+
+    // fluent interface methods
+
+
+
 
     @Override
     public String toString() {

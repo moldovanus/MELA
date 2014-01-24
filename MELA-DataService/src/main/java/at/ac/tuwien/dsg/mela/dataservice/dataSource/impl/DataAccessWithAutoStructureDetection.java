@@ -34,7 +34,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDa
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataSource;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoredElementData;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MetricInfo;
-import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
+//import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,30 +44,22 @@ import java.util.Map;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.springframework.stereotype.Service;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  *
  */
+@Service("autoStructureDetectionDataAccess")
 public class DataAccessWithAutoStructureDetection extends AbstractDataAccess {
-	/**
-	 * Left as this in case we want to limit in the future the nr of DataAccess
-	 * instances we create and maybe use a pool of instances
-	 * 
-	 * @return
-	 */
-	public static DataAccessWithAutoStructureDetection createInstance() {
 
-		return new DataAccessWithAutoStructureDetection();
-	}
+    public static final String SERVICE_UNIT_ID = "serviceUnitID";
 
-	private DataAccessWithAutoStructureDetection() {
-
+    public DataAccessWithAutoStructureDetection() {
 	}
 
 	/**
-	 * @param MonitoredElement
-	 *            the root element of the Service Structure hierarchy
+	 * @param m the root element of the Service Structure hierarchy
 	 * @return ServiceMonitoringSnapshot containing the monitored data organized
 	 *         both in tree and by level Searches in the Ganglia HOSTS
 	 *         monitoring for MonitoredElement ID, and if it finds such ID
@@ -159,7 +151,8 @@ public class DataAccessWithAutoStructureDetection extends AbstractDataAccess {
 					metric.setMeasurementUnit(gangliaMetricInfo.getUnits());
 					MetricValue metricValue = new MetricValue(gangliaMetricInfo.getConvertedValue());
 					monitoredMetricValues.put(metric, metricValue);
-					if (metric.getName().equals(Configuration.getMonitoredElementIDMetricName())) {
+
+                    if (metric.getName().equals(SERVICE_UNIT_ID)) {
 						monitoredElement = new MonitoredElement();
 						monitoredElement.setId(gangliaMetricInfo.getValue());
 						monitoredElement.setLevel(MonitoredElement.MonitoredElementLevel.SERVICE_UNIT);

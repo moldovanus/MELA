@@ -60,7 +60,7 @@ import org.json.simple.JSONObject;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
- *
+ * <p/>
  * Delegates the functionality of configuring MELA for instant monitoring and
  * analysis
  */
@@ -76,38 +76,13 @@ public class ElasticityAnalysisManager {
     private PersistenceSQLAccess persistenceSQLAccess;
 
     protected ElasticityAnalysisManager() {
-
-        // initiate logger
-        {
-            String date = new Date().toString();
-            date = date.replace(" ", "_");
-            date = date.replace(":", "_");
-            System.getProperties().put("recording_date", date);
-
-            try {
-                ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-                // ClassLoader classLoader =
-                // Configuration.class.getClassLoader();
-
-                InputStream log4jStream = ResourceLoader.getLog4JConfigurationStream();
-
-                if (log4jStream != null) {
-                    PropertyConfigurator.configure(log4jStream);
-                    log4jStream.close();
-                }
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }
-
         instantMonitoringDataAnalysisEngine = new InstantMonitoringDataAnalysisEngine();
 
         // get latest config
-        ConfigurationXMLRepresentation configurationXMLRepresentation = persistenceSQLAccess.getLatestConfiguration("mela", "mela", Configuration.getDataServiceIP(), Configuration.getDataServicePort());
+        ConfigurationXMLRepresentation configurationXMLRepresentation = persistenceSQLAccess.getLatestConfiguration();
 
         // open proper sql access
-        persistenceSQLAccess = new PersistenceSQLAccess("mela", "mela", Configuration.getDataServiceIP(), Configuration.getDataServicePort(), configurationXMLRepresentation.getServiceConfiguration().getId());
+        persistenceSQLAccess = new PersistenceSQLAccess(configurationXMLRepresentation.getServiceConfiguration().getId());
         setInitialServiceConfiguration(configurationXMLRepresentation.getServiceConfiguration());
         setInitialCompositionRulesConfiguration(configurationXMLRepresentation.getCompositionRulesConfiguration());
         setInitialRequirements(configurationXMLRepresentation.getRequirements());
@@ -127,18 +102,8 @@ public class ElasticityAnalysisManager {
 
     public synchronized void setServiceConfiguration(MonitoredElement serviceConfiguration) {
         this.serviceConfiguration = serviceConfiguration;
-        // elasticitySpaceFunction = new
-        // ElSpaceDefaultFunction(serviceConfiguration);
-        // if (requirements != null) {
-        // elasticitySpaceFunction.setRequirements(requirements);
-        // }
-        try {
-            persistenceSQLAccess.closeConnection();
-        } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        persistenceSQLAccess = new PersistenceSQLAccess("mela", "mela", Configuration.getDataServiceIP(), Configuration.getDataServicePort(), serviceConfiguration.getId());
+
+        persistenceSQLAccess.refresh(); // = new PersistenceSQLAccess("mela", "mela", Configuration.getDataServiceIP(), Configuration.getDataServicePort(), serviceConfiguration.getId());
 
         MelaDataServiceConfigurationAPIConnector.sendServiceStructure(serviceConfiguration);
     }
@@ -281,6 +246,8 @@ public class ElasticityAnalysisManager {
         // }
         // }
         // }
+
+
         this.compositionRulesConfiguration = compositionRulesConfiguration;
 
         //
@@ -432,7 +399,7 @@ public class ElasticityAnalysisManager {
         return elementMonitoringSnapshots;
     }
 
-//    // performs multiple database interrogations (avids using memory)
+    //    // performs multiple database interrogations (avids using memory)
 //    public synchronized String getElasticityPathwayLazy(MonitoredElement element) {
 //        // if no service configuration, we can't have elasticity space function
 //        // if no compositionRulesConfiguration we have no data
@@ -652,7 +619,6 @@ public class ElasticityAnalysisManager {
     }
 
     /**
-     *
      * @param element
      * @return also contains the monitored values
      */
@@ -670,7 +636,6 @@ public class ElasticityAnalysisManager {
     }
 
     /**
-     *
      * @param element
      * @return contains only the Metric and their ElasticityBoundaries
      */

@@ -80,6 +80,12 @@
             <artifactId>hsqldb</artifactId>
             <version>2.3.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jms</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
                                 
         <!--Dependency on the Data Access module -->
 

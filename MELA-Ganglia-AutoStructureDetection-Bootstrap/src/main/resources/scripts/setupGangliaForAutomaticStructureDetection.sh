@@ -19,13 +19,15 @@ if [ ! -d "$GANGLIA_CONFIG_DIR" ]; then
      su -S mkdir 
 fi
    
-if [! -f "$GANGLIA_MODULES_CONFIG_FILE" ]
+if [ ! -f "$GANGLIA_MODULES_CONFIG_FILE" ]; then
  #copy file which activates Python modules
  sudo -S cp $MELA_GANGLIA_CONFIG_FILES_LOCATION/modpython.conf $GANGLIA_MODULES_CONFIG_FILE       
 fi
 
 #extract path where Ganglia Python plug-ins need to be copied 
-GANGLIA_PLUG_INS_DIR = $EXTRACT_GANGLIA_PLUGINS_DIR_CMD;
+echo $EXTRACT_GANGLIA_PLUGINS_DIR_CMD
+GANGLIA_PLUG_INS_DIR=`cat $GANGLIA_MODULES_CONFIG_FILE | grep params | tr -d '"'`;
+echo $GANGLIA_PLUG_INS_DIR
 
 #copy Ganglia plug-ins config files
 sudo -S cp $MELA_GANGLIA_CONFIG_FILES_LOCATION/getServiceIDPlugIn.conf $GANGLIA_CONFIG_DIR/getServiceIDPlugIn.conf

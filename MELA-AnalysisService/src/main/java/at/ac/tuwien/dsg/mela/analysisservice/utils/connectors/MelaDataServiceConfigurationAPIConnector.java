@@ -8,6 +8,7 @@ import javax.jms.MapMessage;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 
+import at.ac.tuwien.dsg.mela.dataservice.api.CommandConsumer;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -17,8 +18,6 @@ import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionR
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ActionXML;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
-import at.ac.tuwien.dsg.mela.dataservice.api.DataServiceActiveMQAPI;
-import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
 
 import java.io.StringWriter;
 
@@ -37,7 +36,7 @@ public class MelaDataServiceConfigurationAPIConnector {
 			StringWriter writer = new StringWriter();
 			jAXBContext.createMarshaller().marshal(configurationXMLRepresentation, writer);
 
-			sendMessage(DataServiceActiveMQAPI.SUBMIT_CONFIGURATION_COMMAND, writer.getBuffer().toString());
+			sendMessage(CommandConsumer.SUBMIT_CONFIGURATION_COMMAND, writer.getBuffer().toString());
 			Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.INFO, "Config submitted");
 		} catch (JAXBException ex) {
 			Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.ERROR, null, ex);
@@ -51,7 +50,7 @@ public class MelaDataServiceConfigurationAPIConnector {
 			StringWriter writer = new StringWriter();
 			jAXBContext.createMarshaller().marshal(compositionRulesConfiguration, writer);
 
-			sendMessage(DataServiceActiveMQAPI.SUBMIT_COMPOSITION_RULES, writer.getBuffer().toString());
+			sendMessage(CommandConsumer.SUBMIT_COMPOSITION_RULES, writer.getBuffer().toString());
 		} catch (JAXBException ex) {
 			Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.ERROR, null, ex);
 		}
@@ -65,7 +64,7 @@ public class MelaDataServiceConfigurationAPIConnector {
 			StringWriter writer = new StringWriter();
 			jAXBContext.createMarshaller().marshal(requirements, writer);
 
-			sendMessage(DataServiceActiveMQAPI.SUBMIT_REQUIREMENTS, writer.getBuffer().toString());
+			sendMessage(CommandConsumer.SUBMIT_REQUIREMENTS, writer.getBuffer().toString());
 		} catch (JAXBException ex) {
 			Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.ERROR, null, ex);
 		}
@@ -80,7 +79,7 @@ public class MelaDataServiceConfigurationAPIConnector {
 			StringWriter writer = new StringWriter();
 			jAXBContext.createMarshaller().marshal(serviceConfiguration, writer);
 
-			sendMessage(DataServiceActiveMQAPI.UPDATE_SERVICE_STRUCTURE, writer.getBuffer().toString());
+			sendMessage(CommandConsumer.UPDATE_SERVICE_STRUCTURE, writer.getBuffer().toString());
 		} catch (JAXBException ex) {
 			Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.ERROR, null, ex);
 		}
@@ -98,7 +97,7 @@ public class MelaDataServiceConfigurationAPIConnector {
 			StringWriter writer = new StringWriter();
 			jAXBContext.createMarshaller().marshal(action, writer);
 
-			sendMessage(DataServiceActiveMQAPI.ADD_EXECUTING_ACTION, writer.getBuffer().toString());
+			sendMessage(CommandConsumer.ADD_EXECUTING_ACTION, writer.getBuffer().toString());
 		} catch (JAXBException ex) {
 			Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.ERROR, null, ex);
 		}
@@ -116,7 +115,7 @@ public class MelaDataServiceConfigurationAPIConnector {
 			StringWriter writer = new StringWriter();
 			jAXBContext.createMarshaller().marshal(action, writer);
 
-			sendMessage(DataServiceActiveMQAPI.REMOVE_EXECUTING_ACTION, writer.getBuffer().toString());
+			sendMessage(CommandConsumer.REMOVE_EXECUTING_ACTION, writer.getBuffer().toString());
 		} catch (JAXBException ex) {
 			Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.ERROR, null, ex);
 		}
@@ -129,15 +128,18 @@ public class MelaDataServiceConfigurationAPIConnector {
 			StringWriter writer = new StringWriter();
 			jAXBContext.createMarshaller().marshal(serviceConfiguration, writer);
 
-			sendMessage(DataServiceActiveMQAPI.SET_SERVICE_STRUCTURE, writer.getBuffer().toString());
+			sendMessage(CommandConsumer.SET_SERVICE_STRUCTURE, writer.getBuffer().toString());
 		} catch (JAXBException ex) {
 			Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.ERROR, null, ex);
 		}
 	}
 
 	private static void sendMessage(String key, String value) {
-		ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(System.getProperty("ActiveMQProtocol", "tcp") + "://"
+		/*ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(System.getProperty("ActiveMQProtocol", "tcp") + "://"
 				+ Configuration.getDataServiceIP() + ":" + Configuration.getDataServiceConfigurationPort());
+        */
+        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(System.getProperty("ActiveMQProtocol", "tcp") + "://"
+				+ "localhost" + ":" + "9124");
 
 		Connection connection = null;
 

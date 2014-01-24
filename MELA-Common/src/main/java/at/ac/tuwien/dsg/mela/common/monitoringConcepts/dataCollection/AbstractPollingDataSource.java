@@ -19,29 +19,20 @@
  */
 package at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection;
 
-import java.util.Map;
-
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
  *
  */
-public abstract class AbstractPoolingDataSource extends AbstractDataSource {
-    //in milliseconds
+public abstract class AbstractPollingDataSource implements AbstractDataSource {
 
-    private int poolingInterval = 1000;
+    int pollingIntervalMs = 1000;
 
-    public int getPoolingInterval() {
-        return poolingInterval;
+    public int getPollingIntervalMs() {
+        return pollingIntervalMs;
     }
 
-    public void setPoolingInterval(int poolingInterval) {
-        this.poolingInterval = poolingInterval;
+    public void setPollingIntervalMs(int pollingIntervalMs) {
+        this.pollingIntervalMs = pollingIntervalMs;
     }
 
-    public AbstractPoolingDataSource(Map<String, String> configuration) {
-        super(configuration);
-        if (configuration.containsKey("poolingInterval")) {
-            poolingInterval = Integer.parseInt(configuration.get("poolingInterval"));
-        }
-    }
 }

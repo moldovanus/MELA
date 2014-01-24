@@ -37,15 +37,16 @@ import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MetricInfo;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoredElementData;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.requirements.MetricFilter;
+import org.springframework.stereotype.Service;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
  **/
+@Service
 public abstract class AbstractDataAccess {
 
 	protected Map<MonitoredElement.MonitoredElementLevel, List<MetricFilter>> metricFilters;
@@ -153,8 +154,8 @@ public abstract class AbstractDataAccess {
 
 	private Timer createMonitoringTimer(final AbstractDataSource dataSource) {
 		Timer timer = new Timer();
-		if (dataSource instanceof AbstractPoolingDataSource) {
-			final AbstractPoolingDataSource abstractPoolingDataSource = (AbstractPoolingDataSource) dataSource;
+		if (dataSource instanceof AbstractPollingDataSource) {
+			final AbstractPollingDataSource abstractPollingDataSource = (AbstractPollingDataSource) dataSource;
 
 			TimerTask dataCollectionTask = new TimerTask() {
 				@Override
@@ -164,7 +165,7 @@ public abstract class AbstractDataAccess {
 						MonitoringData data = dataSource.getMonitoringData();
 						// replace freshest monitoring data
 						
-						freshestMonitoredData.put(abstractPoolingDataSource, data);
+						freshestMonitoredData.put(abstractPollingDataSource, data);
 					} catch (DataAccessException e) {
 						// TODO Auto-generated catch block
 						Logger.getLogger(AbstractDataAccess.class).log(Level.ERROR, null, e);
@@ -172,7 +173,7 @@ public abstract class AbstractDataAccess {
 
 				}
 			};
-			timer.scheduleAtFixedRate(dataCollectionTask, 0, abstractPoolingDataSource.getPoolingInterval());
+			timer.scheduleAtFixedRate(dataCollectionTask, 0, abstractPollingDataSource.getPollingIntervalMs());
 		} else {
 			// TODO: needs to be implemented
 			Logger.getLogger(AbstractDataAccess.class).log(Priority.ERROR, "Not supporting yet data source of type " + dataSource.getClass().getName());

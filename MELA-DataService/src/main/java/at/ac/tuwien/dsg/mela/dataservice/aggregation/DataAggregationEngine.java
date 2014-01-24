@@ -41,11 +41,14 @@ import java.util.Map;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.springframework.stereotype.Service;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  *
  */
+
+@Service
 public class DataAggregationEngine {
 
     private List<MonitoredElement.MonitoredElementLevel> serviceLevelProcessingOrder;

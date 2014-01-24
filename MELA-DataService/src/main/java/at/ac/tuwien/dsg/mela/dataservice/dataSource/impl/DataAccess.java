@@ -19,47 +19,32 @@
  */
 package at.ac.tuwien.dsg.mela.dataservice.dataSource.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.log4j.Level;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MetricInfo;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoredElementData;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.*;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement.MonitoredElementLevel;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataAccess;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataSource;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
- *
  */
+@Service("defaultDataAccess")
 public class DataAccess extends AbstractDataAccess {
-     
-    /**
-     * Left as this in case we want to limit in the future the nr of DataAccess instances we create and maybe use a pool of instances 
-     * @return
-     */
-    public static DataAccess createInstance() {
-    	
-        return new DataAccess();
-    }
 
-    private DataAccess( ) {
-         
+    static final Logger log = LoggerFactory.getLogger(DataAccess.class);
+
+    public DataAccess() {
     }
 
     /**
-     * @param MonitoredElement the root element of the Service Structure
-     * hierarchy
+     * @param m the root element of the Service Structure
+     *          hierarchy
      * @return ServiceMonitoringSnapshot containing the monitored data organized
      * both in tree and by level Searches in the Ganglia HOSTS monitoring for
      * MonitoredElement ID, and if it finds such ID searches it in the supplied
@@ -71,9 +56,10 @@ public class DataAccess extends AbstractDataAccess {
     public synchronized ServiceMonitoringSnapshot getStructuredMonitoredData(MonitoredElement m) {
 
         if (m == null) {
-            Logger.getLogger(DataAccess.class).log(Level.WARN, "No supplied service configuration");
+            log.warn("No supplied service configuration");
             return new ServiceMonitoringSnapshot();
         }
+
         MonitoredElement structureRoot = m.clone();
 
         // extract all VMs from the service structure
@@ -112,18 +98,18 @@ public class DataAccess extends AbstractDataAccess {
 //                vms.put(processedElement, processedElement);
 //            }
 
-                for (MonitoredElement child : processedElement.getContainedElements()) // add empty monitoring data
-                // for each serviceStructure element, to serve as a place where
-                // in the future composite metrics can be added
-                {
-                    MonitoredElementMonitoringSnapshot monitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(child, new LinkedHashMap<Metric, MetricValue>());
-                    element.addChild(monitoredElementMonitoringSnapshot);
-                    serviceMonitoringSnapshot.addMonitoredData(monitoredElementMonitoringSnapshot);
-                    bfsTraversalQueue.add(monitoredElementMonitoringSnapshot);
-
-                }
+            for (MonitoredElement child : processedElement.getContainedElements()) // add empty monitoring data
+            // for each serviceStructure element, to serve as a place where
+            // in the future composite metrics can be added
+            {
+                MonitoredElementMonitoringSnapshot monitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(child, new LinkedHashMap<Metric, MetricValue>());
+                element.addChild(monitoredElementMonitoringSnapshot);
+                serviceMonitoringSnapshot.addMonitoredData(monitoredElementMonitoringSnapshot);
+                bfsTraversalQueue.add(monitoredElementMonitoringSnapshot);
 
             }
+
+        }
 
         // go through each monitored element and update the service monitoring
         // snapshot
@@ -145,7 +131,7 @@ public class DataAccess extends AbstractDataAccess {
                     monitoredMetricValues.put(metric, metricValue);
                 }
                 MonitoredElement monitoredElement = elementData.getMonitoredElement();
-                
+
                 if (elements.containsKey(monitoredElement)) {
                     // get the monitored element from the supplied service
                     // structure, where is connected with service units
