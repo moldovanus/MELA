@@ -19,44 +19,33 @@
  */
 package at.ac.tuwien.dsg.mela.analysisservice.control;
 
-import at.ac.tuwien.dsg.mela.common.requirements.Requirement;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MetricValue;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
-import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
-import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpace;
+import at.ac.tuwien.dsg.mela.analysisservice.utils.connectors.MelaDataServiceConfigurationAPIConnector;
+import at.ac.tuwien.dsg.mela.analysisservice.utils.converters.ConvertToJSON;
+import at.ac.tuwien.dsg.mela.analysisservice.utils.converters.ConvertToXML;
+import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.LightweightEncounterRateElasticityPathway;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.som.Neuron;
-import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.engines.InstantMonitoringDataAnalysisEngine;
-import at.ac.tuwien.dsg.mela.analysisservice.utils.converters.ConvertToJSON;
-import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.report.AnalysisReport;
-import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationXMLRepresentation;
-import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
-import at.ac.tuwien.dsg.mela.analysisservice.utils.Configuration;
-import at.ac.tuwien.dsg.mela.analysisservice.utils.ResourceLoader;
-import at.ac.tuwien.dsg.mela.analysisservice.utils.connectors.MelaDataServiceConfigurationAPIConnector;
-import at.ac.tuwien.dsg.mela.analysisservice.utils.converters.ConvertToXML;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElSpaceDefaultFunction;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpace;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpaceFunction;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.engines.InstantMonitoringDataAnalysisEngine;
+import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.report.AnalysisReport;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticityPathwayXML;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ElasticitySpaceXML;
+import at.ac.tuwien.dsg.mela.common.monitoringConcepts.*;
+import at.ac.tuwien.dsg.mela.common.requirements.Requirement;
+import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
+import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.dataservice.persistence.PersistenceSQLAccess;
-
-import java.io.InputStream;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+import java.util.*;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
@@ -64,58 +53,65 @@ import org.json.simple.JSONObject;
  * Delegates the functionality of configuring MELA for instant monitoring and
  * analysis
  */
+@Service
 public class ElasticityAnalysisManager {
 
-    // private AbstractDataAccess dataAccess;
+    @Value("${analysisservice.elasticityanalysis:true}")
+    private boolean elasticityAnalysisEnabled;
+
+    @Autowired
+    private MelaDataServiceConfigurationAPIConnector melaApi;
+
     private Requirements requirements;
+
     private CompositionRulesConfiguration compositionRulesConfiguration;
+
     private MonitoredElement serviceConfiguration;
+
     private InstantMonitoringDataAnalysisEngine instantMonitoringDataAnalysisEngine;
-    // used in determining the service elasticity space
-    // private ElasticitySpaceFunction elasticitySpaceFunction;
+
+    @Autowired
     private PersistenceSQLAccess persistenceSQLAccess;
 
-    protected ElasticityAnalysisManager() {
+    @PostConstruct
+    public void init() {
         instantMonitoringDataAnalysisEngine = new InstantMonitoringDataAnalysisEngine();
 
         // get latest config
         ConfigurationXMLRepresentation configurationXMLRepresentation = persistenceSQLAccess.getLatestConfiguration();
+        persistenceSQLAccess.setMonitoringId(configurationXMLRepresentation.getServiceConfiguration().getId());
 
         // open proper sql access
-        persistenceSQLAccess = new PersistenceSQLAccess(configurationXMLRepresentation.getServiceConfiguration().getId());
+        //persistenceSQLAccess = new PersistenceSQLAccess(configurationXMLRepresentation.getServiceConfiguration().getId());
         setInitialServiceConfiguration(configurationXMLRepresentation.getServiceConfiguration());
         setInitialCompositionRulesConfiguration(configurationXMLRepresentation.getCompositionRulesConfiguration());
         setInitialRequirements(configurationXMLRepresentation.getRequirements());
+    }
+
+    protected ElasticityAnalysisManager() {
+    }
+
+
+    public synchronized void addExecutingAction(String targetEntityID, String actionName) {
+        melaApi.addExecutingAction(targetEntityID, actionName);
+    }
+
+    public synchronized void removeExecutingAction(String targetEntityID, String actionName) {
+        melaApi.removeExecutingAction(targetEntityID, actionName);
+    }
+
+    public synchronized void setServiceConfiguration(MonitoredElement serviceConfiguration) {
+        this.serviceConfiguration = serviceConfiguration;
+        persistenceSQLAccess.refresh(); // = new PersistenceSQLAccess("mela", "mela", Configuration.getDataServiceIP(), Configuration.getDataServicePort(), serviceConfiguration.getId());
+        melaApi.sendServiceStructure(serviceConfiguration);
     }
 
     public synchronized MonitoredElement getServiceConfiguration() {
         return serviceConfiguration;
     }
 
-    public synchronized void addExecutingAction(String targetEntityID, String actionName) {
-        MelaDataServiceConfigurationAPIConnector.addExecutingAction(targetEntityID, actionName);
-    }
-
-    public synchronized void removeExecutingAction(String targetEntityID, String actionName) {
-        MelaDataServiceConfigurationAPIConnector.removeExecutingAction(targetEntityID, actionName);
-    }
-
-    public synchronized void setServiceConfiguration(MonitoredElement serviceConfiguration) {
-        this.serviceConfiguration = serviceConfiguration;
-
-        persistenceSQLAccess.refresh(); // = new PersistenceSQLAccess("mela", "mela", Configuration.getDataServiceIP(), Configuration.getDataServicePort(), serviceConfiguration.getId());
-
-        MelaDataServiceConfigurationAPIConnector.sendServiceStructure(serviceConfiguration);
-    }
-
     private synchronized void setInitialServiceConfiguration(MonitoredElement serviceConfiguration) {
         this.serviceConfiguration = serviceConfiguration;
-        // elasticitySpaceFunction = new
-        // ElSpaceDefaultFunction(serviceConfiguration);
-        // if (requirements != null) {
-        // elasticitySpaceFunction.setRequirements(requirements);
-        // }
-
     }
 
     // actually removes all VMs and Virtual Clusters from the ServiceUnit and
@@ -142,7 +138,7 @@ public class ElasticityAnalysisManager {
             }
         }
 
-        MelaDataServiceConfigurationAPIConnector.sendUpdatedServiceStructure(this.serviceConfiguration);
+        melaApi.sendUpdatedServiceStructure(this.serviceConfiguration);
 
     }
 
@@ -152,9 +148,7 @@ public class ElasticityAnalysisManager {
 
     public synchronized void setRequirements(Requirements requirements) {
         this.requirements = requirements;
-        // elasticitySpaceFunction.setRequirements(requirements);
-        //
-        MelaDataServiceConfigurationAPIConnector.sendRequirements(requirements);
+        melaApi.sendRequirements(requirements);
 
     }
 
@@ -169,207 +163,22 @@ public class ElasticityAnalysisManager {
     }
 
     public synchronized void setCompositionRulesConfiguration(CompositionRulesConfiguration compositionRulesConfiguration) {
-        // if (dataAccess != null) {
-        // dataAccess.getMetricFilters().clear();
-        // //add data access metric filters for the source of each composition
-        // rule
-        // for (CompositionRule compositionRule :
-        // compositionRulesConfiguration.getMetricCompositionRules().getCompositionRules())
-        // {
-        // //go trough each CompositionOperation and extract the source metrics
-        //
-        // List<CompositionOperation> queue = new
-        // ArrayList<CompositionOperation>();
-        // queue.add(compositionRule.getOperation());
-        //
-        // while (!queue.isEmpty()) {
-        // CompositionOperation operation = queue.remove(0);
-        // queue.addAll(operation.getSubOperations());
-        //
-        // Metric targetMetric = operation.getTargetMetric();
-        // //metric can be null if a composition rule artificially creates a
-        // metric using SET_VALUE
-        // if (targetMetric != null) {
-        // MetricFilter metricFilter = new MetricFilter();
-        // metricFilter.setId(targetMetric.getName() + "_Filter");
-        // metricFilter.setLevel(operation.getMetricSourceMonitoredElementLevel());
-        // Collection<Metric> metrics = new ArrayList<Metric>();
-        // metrics.add(new Metric(targetMetric.getName()));
-        // metricFilter.setMetrics(metrics);
-        // dataAccess.addMetricFilter(metricFilter);
-        // }
-        // }
-        // }
         this.compositionRulesConfiguration = compositionRulesConfiguration;
-
-        MelaDataServiceConfigurationAPIConnector.sendCompositionRules(compositionRulesConfiguration);
-
-        // } else {
-        // Logger.getLogger(this.getClass()).log(Level.WARN,
-        // "Data Access source not set yet on ElasticityAnalysisManager."
-        // +
-        // "Metric filters to get metrics targeted by composition rules will not be added");
-        // this.compositionRulesConfiguration = compositionRulesConfiguration;
-        // }
-
+        melaApi.sendCompositionRules(compositionRulesConfiguration);
     }
 
     private synchronized void setInitialCompositionRulesConfiguration(CompositionRulesConfiguration compositionRulesConfiguration) {
-        // if (dataAccess != null) {
-        // dataAccess.getMetricFilters().clear();
-        // //add data access metric filters for the source of each composition
-        // rule
-        // for (CompositionRule compositionRule :
-        // compositionRulesConfiguration.getMetricCompositionRules().getCompositionRules())
-        // {
-        // //go trough each CompositionOperation and extract the source metrics
-        //
-        // List<CompositionOperation> queue = new
-        // ArrayList<CompositionOperation>();
-        // queue.add(compositionRule.getOperation());
-        //
-        // while (!queue.isEmpty()) {
-        // CompositionOperation operation = queue.remove(0);
-        // queue.addAll(operation.getSubOperations());
-        //
-        // Metric targetMetric = operation.getTargetMetric();
-        // //metric can be null if a composition rule artificially creates a
-        // metric using SET_VALUE
-        // if (targetMetric != null) {
-        // MetricFilter metricFilter = new MetricFilter();
-        // metricFilter.setId(targetMetric.getName() + "_Filter");
-        // metricFilter.setLevel(operation.getMetricSourceMonitoredElementLevel());
-        // Collection<Metric> metrics = new ArrayList<Metric>();
-        // metrics.add(new Metric(targetMetric.getName()));
-        // metricFilter.setMetrics(metrics);
-        // dataAccess.addMetricFilter(metricFilter);
-        // }
-        // }
-        // }
-
-
         this.compositionRulesConfiguration = compositionRulesConfiguration;
-
-        //
-        // } else {
-        // Logger.getLogger(this.getClass()).log(Level.WARN,
-        // "Data Access source not set yet on ElasticityAnalysisManager."
-        // +
-        // "Metric filters to get metrics targeted by composition rules will not be added");
-        // this.compositionRulesConfiguration = compositionRulesConfiguration;
-        // }
-
     }
 
-    // public synchronized AbstractDataAccess getDataAccess() {
-    // return dataAccess;
-    // }
-    //
-    // public synchronized void setDataAccess(AbstractDataAccess dataAccess) {
-    // this.dataAccess = dataAccess;
-    // }
-    // public synchronized ServiceMonitoringSnapshot getRawMonitoringData() {
-    // // if (dataAccess != null) {
-    // Date before = new Date();
-    // ServiceMonitoringSnapshot monitoredData =
-    // dataAccess.getMonitoredData(serviceConfiguration);;
-    // Date after = new Date();
-    // Logger.getLogger(this.getClass()).log(Level.WARN,
-    // "Raw monitoring data access time in ms:  " + new Date(after.getTime() -
-    // before.getTime()).getTime());
-    // return monitoredData;
-    // // } else {
-    // // Logger.getLogger(this.getClass()).log(Level.WARN,
-    // "Data Access source not set yet on ElasticityAnalysisManager");
-    // // return new ServiceMonitoringSnapshot();
-    // // }
-    // }
-    //
-    // private synchronized ServiceMonitoringSnapshot
-    // getAggregatedMonitoringData(ServiceMonitoringSnapshot rawMonitoringData)
-    // {
-    // if (dataAccess != null) {
-    // return
-    // instantMonitoringDataEnrichmentEngine.enrichMonitoringData(compositionRulesConfiguration,
-    // rawMonitoringData);
-    // } else {
-    // Logger.getLogger(this.getClass()).log(Level.WARN,
-    // "Data Access source not set yet on ElasticityAnalysisManager");
-    // return new ServiceMonitoringSnapshot();
-    // }
-    // }
-    // private synchronized AnalysisReport
-    // analyzeAggregatedMonitoringData(ServiceMonitoringSnapshot
-    // rawMonitoringData) {
-    // if (dataAccess != null) {
-    // return
-    // instantMonitoringDataAnalysisEngine.analyzeRequirements(instantMonitoringDataEnrichmentEngine.enrichMonitoringData(compositionRulesConfiguration,
-    // rawMonitoringData), requirements);
-    // } else {
-    // Logger.getLogger(this.getClass()).log(Level.WARN,
-    // "Data Access source not set yet on ElasticityAnalysisManager");
-    // return new AnalysisReport(new ServiceMonitoringSnapshot(), new
-    // Requirements());
-    // }
-    // }
     public synchronized AnalysisReport analyzeLatestMonitoringData() {
-        // if (dataAccess != null) {
         return instantMonitoringDataAnalysisEngine.analyzeRequirements(persistenceSQLAccess.extractLatestMonitoringData(), requirements);
-        // } else {
-        // Logger.getLogger(this.getClass()).log(Level.WARN,
-        // "Data Access source not set yet on ElasticityAnalysisManager");
-        // return new AnalysisReport(new ServiceMonitoringSnapshot(), new
-        // Requirements());
-        // }
     }
 
     public synchronized Collection<Metric> getAvailableMetricsForMonitoredElement(MonitoredElement monitoredElement) {
-        // if (dataAccess != null) {
-        // return
-        // dataAccess.getAvailableMetricsForMonitoredElement(MonitoredElement);
-        // } else {
-
         return persistenceSQLAccess.getAvailableMetrics(monitoredElement);
-        // }
     }
 
-    // public synchronized void addMetricFilter(MetricFilter metricFilter) {
-    // if (dataAccess != null) {
-    // dataAccess.addMetricFilter(metricFilter);
-    // } else {
-    // Logger.getLogger(this.getClass()).log(Level.WARN,
-    // "Data Access source not set yet on ElasticityAnalysisManager");
-    // }
-    // }
-    //
-    // public synchronized void addMetricFilters(Collection<MetricFilter>
-    // newFilters) {
-    // if (dataAccess != null) {
-    // dataAccess.addMetricFilters(newFilters);
-    // } else {
-    // Logger.getLogger(this.getClass()).log(Level.WARN,
-    // "Data Access source not set yet on ElasticityAnalysisManager");
-    // }
-    // }
-    //
-    // public synchronized void removeMetricFilter(MetricFilter metricFilter) {
-    // if (dataAccess != null) {
-    // dataAccess.removeMetricFilter(metricFilter);
-    // } else {
-    // Logger.getLogger(this.getClass()).log(Level.WARN,
-    // "Data Access source not set yet on ElasticityAnalysisManager");
-    // }
-    // }
-    //
-    // public synchronized void removeMetricFilters(Collection<MetricFilter>
-    // filtersToRemove) {
-    // if (dataAccess != null) {
-    // dataAccess.removeMetricFilters(filtersToRemove);
-    // } else {
-    // Logger.getLogger(this.getClass()).log(Level.WARN,
-    // "Data Access source not set yet on ElasticityAnalysisManager");
-    // }
-    // }
     public synchronized MonitoredElementMonitoringSnapshot getLatestMonitoringData() {
         ServiceMonitoringSnapshot monitoringSnapshot = persistenceSQLAccess.extractLatestMonitoringData();
         if (monitoringSnapshot != null && !monitoringSnapshot.getMonitoredData().isEmpty()) {
@@ -399,100 +208,13 @@ public class ElasticityAnalysisManager {
         return elementMonitoringSnapshots;
     }
 
-    //    // performs multiple database interrogations (avids using memory)
-//    public synchronized String getElasticityPathwayLazy(MonitoredElement element) {
-//        // if no service configuration, we can't have elasticity space function
-//        // if no compositionRulesConfiguration we have no data
-//        if (!Configuration.isElasticityAnalysisEnabled() || serviceConfiguration == null && compositionRulesConfiguration != null) {
-//            Logger.getLogger(this.getClass()).log(Level.WARN, "Elasticity analysis disabled, or no service configuration or composition rules configuration");
-//            JSONObject elSpaceJSON = new JSONObject();
-//            elSpaceJSON.put("name", "ElPathway");
-//            return elSpaceJSON.toJSONString();
-//        }
-//
-//        int recordsCount = persistenceSQLAccess.getRecordsCount();
-//
-//        // first, read from the sql of monitoring data, in increments of 10, and
-//        // train the elasticity space function
-//        LightweightEncounterRateElasticityPathway elasticityPathway = null;
-//
-//        ElasticitySpace tempSpace = new ElasticitySpace(serviceConfiguration);
-//        List<Metric> metrics = null;
-//        int stepCount = (recordsCount > 500) ? recordsCount / 500 : 1;
-//
-//        for (int i = 0; i < stepCount; i++) {
-//            List<ServiceMonitoringSnapshot> extractedData = persistenceSQLAccess.extractMonitoringData(i * 500, 500);
-//            if (extractedData != null) {
-//                // for each extracted snapshot, train the space
-//                for (ServiceMonitoringSnapshot monitoringSnapshot : extractedData) {
-//                    tempSpace.addMonitoringData(monitoringSnapshot);
-//                }
-//            }
-//            Map<Metric, List<MetricValue>> map = tempSpace.getMonitoredDataForService(element);
-//            if (map != null && metrics == null) {
-//                metrics = new ArrayList<Metric>(map.keySet());
-//                // we need to know the number of weights to add in instantiation
-//                elasticityPathway = new LightweightEncounterRateElasticityPathway(metrics.size());
-//            }
-//
-//            elasticityPathway.trainElasticityPathway(map);
-//            tempSpace.reset();
-//        }
-//
-//        List<Neuron> neurons = elasticityPathway.getSituationGroups();
-//        if (metrics == null) {
-//            Logger.getLogger(this.getClass()).log(Level.ERROR,
-//                    "Service Element " + element.getId() + " at level " + element.getLevel() + " was not found in service structure");
-//            JSONObject elSpaceJSON = new JSONObject();
-//            elSpaceJSON.put("name", "Service not found");
-//            return elSpaceJSON.toJSONString();
-//        } else {
-//            return ConvertToJSON.convertElasticityPathway(metrics, neurons);
-//        }
-//    }
-//    // performs multiple database interrogations (avids using memory)
-//    public synchronized String getElasticitySpaceLazy(MonitoredElement element) {
-//
-//        // if no service configuration, we can't have elasticity space function
-//        // if no compositionRulesConfiguration we have no data
-//        if (!Configuration.isElasticityAnalysisEnabled() || serviceConfiguration == null && compositionRulesConfiguration != null) {
-//            Logger.getLogger(this.getClass()).log(Level.WARN, "Elasticity analysis disabled, or no service configuration or composition rules configuration");
-//            JSONObject elSpaceJSON = new JSONObject();
-//            elSpaceJSON.put("name", "ElSpace");
-//            return elSpaceJSON.toJSONString();
-//        }
-//
-//        int recordsCount = persistenceSQLAccess.getRecordsCount();
-//
-//        // first, read from the sql of monitoring data, in increments of 10, and
-//        // train the elasticity space function
-//        List<Metric> metrics = null;
-//        int stepCount = (recordsCount > 500) ? recordsCount / 500 : 1;
-//
-//        // for (int i = 0; i < stepCount; i++) {
-//        // List<ServiceMonitoringSnapshot> extractedData =
-//        // persistenceSQLAccess.extractMonitoringData(i * 500, 500);
-//        // if (extractedData != null) {
-//        // // for each extracted snapshot, trim it to contain data only for
-//        // // the targetedMonitoredElement (minimizes RAM usage)
-//        // for (ServiceMonitoringSnapshot monitoringSnapshot : extractedData) {
-//        // // monitoringSnapshot.keepOnlyDataForElement(element);
-//        // elasticitySpaceFunction.trainElasticitySpace(monitoringSnapshot);
-//        // }
-//        // }
-//        // }
-//
-//        ElasticitySpace space = persistenceSQLAccess.extractLatestElasticitySpace();
-//        String jsonRepr = ConvertToJSON.convertElasticitySpace(space, element);
-//
-//        return jsonRepr;
-//    }
+
     // uses a lot of memory (all directly in memory)
     public synchronized String getElasticityPathway(MonitoredElement element) {
 
         // if no service configuration, we can't have elasticity space function
         // if no compositionRulesConfiguration we have no data
-        if (!Configuration.isElasticityAnalysisEnabled() || serviceConfiguration == null && compositionRulesConfiguration != null) {
+        if (!elasticityAnalysisEnabled || serviceConfiguration == null && compositionRulesConfiguration != null) {
             Logger.getLogger(this.getClass()).log(Level.WARN, "Elasticity analysis disabled, or no service configuration or composition rules configuration");
             JSONObject elSpaceJSON = new JSONObject();
             elSpaceJSON.put("name", "ElPathway");
@@ -554,7 +276,7 @@ public class ElasticityAnalysisManager {
 
         // if no service configuration, we can't have elasticity space function
         // if no compositionRulesConfiguration we have no data
-        if (!Configuration.isElasticityAnalysisEnabled() || serviceConfiguration == null && compositionRulesConfiguration != null) {
+        if (!elasticityAnalysisEnabled || serviceConfiguration == null && compositionRulesConfiguration != null) {
             Logger.getLogger(this.getClass()).log(Level.WARN, "Elasticity analysis disabled, or no service configuration or composition rules configuration");
             return elasticityPathwayXML;
         }
@@ -599,7 +321,7 @@ public class ElasticityAnalysisManager {
 
         // if no service configuration, we can't have elasticity space function
         // if no compositionRulesConfiguration we have no data
-        if (!Configuration.isElasticityAnalysisEnabled() || serviceConfiguration == null && compositionRulesConfiguration != null) {
+        if (!elasticityAnalysisEnabled || serviceConfiguration == null && compositionRulesConfiguration != null) {
             Logger.getLogger(this.getClass()).log(Level.WARN, "Elasticity analysis disabled, or no service configuration or composition rules configuration");
             JSONObject elSpaceJSON = new JSONObject();
             elSpaceJSON.put("name", "ElSpace");

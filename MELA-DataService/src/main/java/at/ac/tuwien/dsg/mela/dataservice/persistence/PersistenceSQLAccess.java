@@ -83,10 +83,10 @@ public class PersistenceSQLAccess {
     }
 
     @PostConstruct
-        public void init() {
-            log.debug("Creating new JdbcTemplate with datasource {}", dataSource);
-            jdbcTemplate = new JdbcTemplate(dataSource);
-        }
+    public void init() {
+        log.debug("Creating new JdbcTemplate with datasource {}", dataSource);
+        jdbcTemplate = new JdbcTemplate(dataSource);
+    }
 
 
     /**
@@ -286,7 +286,6 @@ public class PersistenceSQLAccess {
     }
 
     public ConfigurationXMLRepresentation getLatestConfiguration() {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         String sql = "SELECT configuration from Configuration where ID=(Select max(ID) from Configuration)";
         ConfigurationXMLRepresentation configurationXMLRepresentation = null;
         try {
@@ -344,5 +343,9 @@ public class PersistenceSQLAccess {
     // todo recreate persistence context here, invoked if service configuration changes (actually re-instantiates the PersistenceSQLAccess object)
     public void refresh() {
 
+    }
+
+    public void setMonitoringId(String monitoringSequenceID) {
+        this.monitoringSequenceID = monitoringSequenceID;
     }
 }

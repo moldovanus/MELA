@@ -280,40 +280,6 @@ public class DataCollectionService {
 
         }
 
-        // read data sources configuration file
-        /*DataSourceConfigs dataSources = new DataSourceConfigs(); //DataSourcesManager.readDataSourcesConfiguration();
-        log.debug( "Using following data sources:");
-        for (DataSourceConfig config : dataSources.getConfigs()) {
-
-            log.debug( config.toString());
-
-            // transform configuration options in key-value pairs
-
-            Map<String, String> configuration = new HashMap<String, String>();
-            for (String configEntry : config.getProperties()) {
-                String[] info = configEntry.split("=");
-                configuration.put(info[0], info[1]);
-            }
-            String pathToDataSource = config.getType();
-
-            //dinamically load data source class
-            try {
-                //use data source Type to loade it
-                Class dataSourceImplementationClass = Class.forName(pathToDataSource);
-
-                //get constructor which takes a Map<String,String> as configuration parameter
-                Constructor<AbstractDataSource> constructor = dataSourceImplementationClass.getConstructor(Map.class);
-
-                AbstractDataSource dataSourceInstance = constructor.newInstance(configuration);
-
-                //add newly created data source
-                dataAccess.addDataSource(dataSourceInstance);
-            } catch (Exception e) {
-                log.error(e.getMessage(), e);
-            }
-
-        }*/
-
         // set metric filters on data access
         for (CompositionRule compositionRule : compositionRulesConfiguration.getMetricCompositionRules().getCompositionRules()) {
             // go trough each CompositionOperation and extract the source
@@ -385,8 +351,7 @@ public class DataCollectionService {
                             // elasticityPathway.trainElasticityPathway(null)
 
                             Date after = new Date();
-                            log.debug(
-                                    "DaaS data writing time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+                            log.debug("DaaS data writing time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
                             // elasticitySpaceFunction.trainElasticitySpace(latestMonitoringData);
                         }
                     } else {

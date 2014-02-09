@@ -14,7 +14,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package at.ac.tuwien.dsg.mela.analysisservice.utils.evalaution;
+package at.ac.tuwien.dsg.mela.analysisservice.utils.evaluation;
 
 import java.io.BufferedWriter;
 import java.io.File;

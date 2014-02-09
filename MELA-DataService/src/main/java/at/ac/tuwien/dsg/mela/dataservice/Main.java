@@ -21,7 +21,6 @@ package at.ac.tuwien.dsg.mela.dataservice;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 
@@ -34,20 +33,7 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException {
         log.info("Starting up MELA. Initializing application context.");
-        Main main = new Main();
-        ApplicationContext context = new ClassPathXmlApplicationContext("application-context.xml");
-
-        /*DataCollectionService dataCollectionService = DataCollectionService.getInstance();
-        DataServiceActiveMQAPI activeMQAPI = new DataServiceActiveMQAPI(dataCollectionService);*/
-
-/*        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                service.stopServer();
-            }
-        })*/
-        ;
-
-        //activeMQAPI.run();
+        new ClassPathXmlApplicationContext("mela-data-service-context.xml");
+        log.info("Initialized application context. Startup complete");
     }
 }

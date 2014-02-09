@@ -2,6 +2,7 @@ package at.ac.tuwien.dsg.mela.dataservice.config;
 
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
+import at.ac.tuwien.dsg.mela.common.requirements.Requirement;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,20 +27,8 @@ public class ConfigurationUtility {
     @Autowired
     ApplicationContext context;
 
-    @Value("${MELA_CONFIG_DIR")
+    @Value("${MELA_CONFIG_DIR}")
     private String configDir;
-
-    public InputStream getDefaultServiceStructureStream() throws IOException {
-        return context.getResource("file://" + configDir + "/default/structure.xml").getInputStream();
-    }
-
-    public InputStream getDefaultMetricCompositionRulesStream() throws IOException {
-        return context.getResource("file://" + configDir + "/default/compositionRules.xml").getInputStream();
-    }
-
-    public InputStream getDefaultRequirementsStream() throws IOException {
-        return context.getResource("file://" + configDir + "/default/requirements.xml").getInputStream();
-    }
 
     public ConfigurationXMLRepresentation createDefaultConfiguration() {
         ConfigurationXMLRepresentation configurationXMLRepresentation = new ConfigurationXMLRepresentation();
@@ -63,40 +52,27 @@ public class ConfigurationUtility {
 
         topology.addElement(serviceUnit);
 
-
-        //retrieve the default config from files
-        try {
-            JAXBContext jAXBContext = JAXBContext.newInstance(MonitoredElement.class);
-            InputStream fileStream = getDefaultServiceStructureStream();
-            service = (MonitoredElement) jAXBContext.createUnmarshaller().unmarshal(fileStream);
-        } catch (Exception ex) {
-            log.error("Cannot unmarshall ServiceStructure: {}", ex.getMessage());
-            // todo shouldn't we throw an exception in this case?
-        }
-
-        //retrieve the default config from files
-        try {
-            JAXBContext jAXBContext = JAXBContext.newInstance(CompositionRulesConfiguration.class);
-            InputStream fileStream = getDefaultMetricCompositionRulesStream();
-            compositionRulesConfiguration = (CompositionRulesConfiguration) jAXBContext.createUnmarshaller().unmarshal(fileStream);
-        } catch (Exception ex) {
-            log.error("Cannot unmarshall CompositionRulesConfiguration: {}", ex.getMessage());
-            //todo exception?
-        }
-
-        //retrieve the default config from files
-        try {
-            JAXBContext jAXBContext = JAXBContext.newInstance(Requirements.class);
-            InputStream fileStream = getDefaultRequirementsStream();
-            requirements = (Requirements) jAXBContext.createUnmarshaller().unmarshal(fileStream);
-        } catch (Exception ex) {
-            log.error("Cannot unmarshall Requirements: {}", ex.getMessage());
-        }
+        service = unmarshalFragment(MonitoredElement.class, "file://" + configDir + "/default/structure.xml");
+        compositionRulesConfiguration = unmarshalFragment(CompositionRulesConfiguration.class, "file://" + configDir + "/default/compositionRules.xml");
+        requirements = unmarshalFragment(Requirements.class, "file://" + configDir + "/default/requirements.xml");
 
         configurationXMLRepresentation.setServiceConfiguration(service);
         configurationXMLRepresentation.setCompositionRulesConfiguration(compositionRulesConfiguration);
         configurationXMLRepresentation.setRequirements(requirements);
 
         return configurationXMLRepresentation;
+    }
+
+    private <T> T unmarshalFragment(Class<T> fragmentType, String filename) {
+        try {
+            JAXBContext jAXBContext = JAXBContext.newInstance(fragmentType);
+            InputStream fileStream = context.getResource(filename).getInputStream();
+            return (T) jAXBContext.createUnmarshaller().unmarshal(fileStream);
+        } catch (Exception ex) {
+            log.error("Cannot unmarshall ServiceStructure: {}", ex.getMessage());
+            // todo shouldn't we throw an exception in this case?
+            return null;
+        }
+
     }
 }

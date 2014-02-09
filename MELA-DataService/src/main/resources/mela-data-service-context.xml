@@ -15,7 +15,28 @@
 
 
     <!-- database related configuration -->
-    <jdbc:embedded-database id="dataSource" type="HSQL"/>
+
+    <!--<jdbc:embedded-database id="dataSource" type="HSQL"/>-->
+
+
+    <bean id="database" class="at.ac.tuwien.dsg.mela.dataservice.spring.HsqlServerBean" lazy-init="false">
+        <property name="serverProperties">
+            <props>
+                <prop key="server.port">9001</prop>
+                <prop key="server.database.0">./db/mela</prop>
+                <prop key="server.dbname.0">mela</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" depends-on="database">
+        <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+        <property name="url" value="jdbc:hsqldb:hsql://localhost:9001/mela"/>
+        <!--    <property name="url" value="jdbc:hsqldb:mem:dataSource"/>-->
+        <property name="username" value="SA"/>
+        <property name="password" value=""/>
+    </bean>
+
 
     <!--<jdbc:initialize-database data-source="dataSource" enabled="#{!${dataservice.operationmode.continuous}}">
         <jdbc:script location="classpath*:schema.sql"/>
@@ -26,19 +47,19 @@
     </jdbc:initialize-database>
 
     <!-- MELA properties -->
-    <context:property-placeholder location="mela.properties"/>
+    <context:property-placeholder location="mela-data-service.properties"/>
 
     <!-- Adds annotated spring beans -->
     <context:component-scan base-package="at.ac.tuwien.dsg"/>
 
     <!-- JMS stuff -->
     <bean id="jmsFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
-        <property name="brokerURL" value="tcp://localhost:9124"/>
+        <property name="brokerURL" value="${dataservice.configuration.uri}"/>
     </bean>
 
     <amq:broker useJmx="true" persistent="false">
         <amq:transportConnectors>
-            <amq:transportConnector uri="tcp://localhost:9124"/>
+            <amq:transportConnector uri="${dataservice.configuration.uri}"/>
         </amq:transportConnectors>
     </amq:broker>
 

@@ -1,179 +1,119 @@
 package at.ac.tuwien.dsg.mela.analysisservice.utils.connectors;
 
-import javax.jms.Connection;
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.MapMessage;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-
-import at.ac.tuwien.dsg.mela.dataservice.api.CommandConsumer;
-import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-
-import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ActionXML;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
+import at.ac.tuwien.dsg.mela.common.requirements.Requirement;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
+import at.ac.tuwien.dsg.mela.dataservice.api.CommandConsumer;
+import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationXMLRepresentation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.MessageCreator;
+import org.springframework.stereotype.Component;
 
-import java.io.StringWriter;
-
+import javax.jms.JMSException;
+import javax.jms.MapMessage;
+import javax.jms.Message;
+import javax.jms.Session;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import java.io.StringWriter;
 
+@Component
 public class MelaDataServiceConfigurationAPIConnector {
 
-	public MelaDataServiceConfigurationAPIConnector() {
-	}
+    static final Logger log = LoggerFactory.getLogger(MelaDataServiceConfigurationAPIConnector.class);
 
-	public static void sendConfiguration(ConfigurationXMLRepresentation configurationXMLRepresentation) {
-		try {
-			JAXBContext jAXBContext = JAXBContext.newInstance(ConfigurationXMLRepresentation.class);
+    @Autowired
+    private JmsTemplate jmsTemplate;
 
-			StringWriter writer = new StringWriter();
-			jAXBContext.createMarshaller().marshal(configurationXMLRepresentation, writer);
+    public void sendConfiguration(ConfigurationXMLRepresentation configurationXMLRepresentation) {
+        try {
+            sendMessage(CommandConsumer.SUBMIT_CONFIGURATION_COMMAND, marshal(configurationXMLRepresentation, ConfigurationXMLRepresentation.class));
+        } catch (JAXBException ex) {
+            log.error("Unable to marshall object of class " + configurationXMLRepresentation.getClass() + " into String", ex);
+        }
+    }
 
-			sendMessage(CommandConsumer.SUBMIT_CONFIGURATION_COMMAND, writer.getBuffer().toString());
-			Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.INFO, "Config submitted");
-		} catch (JAXBException ex) {
-			Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.ERROR, null, ex);
-		}
-	}
 
-	public static void sendCompositionRules(CompositionRulesConfiguration compositionRulesConfiguration) {
-		try {
-			JAXBContext jAXBContext = JAXBContext.newInstance(CompositionRulesConfiguration.class);
+    public void sendCompositionRules(CompositionRulesConfiguration compositionRulesConfiguration) {
+        try {
+            sendMessage(CommandConsumer.SUBMIT_COMPOSITION_RULES, marshal(compositionRulesConfiguration, CompositionRulesConfiguration.class));
+        } catch (JAXBException ex) {
+            log.error("Unable to marshall object of class " + compositionRulesConfiguration.getClass() + " into String", ex);
+        }
+    }
 
-			StringWriter writer = new StringWriter();
-			jAXBContext.createMarshaller().marshal(compositionRulesConfiguration, writer);
+    public void sendRequirements(Requirements requirements) {
+        try {
+            sendMessage(CommandConsumer.SUBMIT_REQUIREMENTS, marshal(requirements, Requirement.class));
+        } catch (JAXBException ex) {
+            log.error("Unable to marshall object of class " + requirements.getClass() + " into String", ex);
+        }
+    }
 
-			sendMessage(CommandConsumer.SUBMIT_COMPOSITION_RULES, writer.getBuffer().toString());
-		} catch (JAXBException ex) {
-			Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.ERROR, null, ex);
-		}
-	}
+    public void sendUpdatedServiceStructure(MonitoredElement serviceConfiguration) {
+        try {
+            sendMessage(CommandConsumer.UPDATE_SERVICE_STRUCTURE, marshal(serviceConfiguration, MonitoredElement.class));
+        } catch (JAXBException ex) {
+            log.error("Unable to marshall object of class " + serviceConfiguration.getClass() + " into String", ex);
+        }
 
-	public static void sendRequirements(Requirements requirements) {
+    }
 
-		try {
-			JAXBContext jAXBContext = JAXBContext.newInstance(Requirements.class);
+    public void addExecutingAction(String targetEntityID, String actionName) {
+        try {
+            sendMessage(CommandConsumer.ADD_EXECUTING_ACTION, marshalActionElement(targetEntityID, actionName));
+        } catch (JAXBException ex) {
+            log.error("Unable to marshall object of class " + ActionXML.class + " into String", ex);
+        }
 
-			StringWriter writer = new StringWriter();
-			jAXBContext.createMarshaller().marshal(requirements, writer);
+    }
 
-			sendMessage(CommandConsumer.SUBMIT_REQUIREMENTS, writer.getBuffer().toString());
-		} catch (JAXBException ex) {
-			Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.ERROR, null, ex);
-		}
+    public void removeExecutingAction(String targetEntityID, String actionName) {
+        try {
+            sendMessage(CommandConsumer.REMOVE_EXECUTING_ACTION, marshalActionElement(targetEntityID, actionName));
+        } catch (JAXBException ex) {
+            log.error("Unable to marshall object of class " + ActionXML.class + " into String", ex);
+        }
+    }
 
-	}
+    public void sendServiceStructure(MonitoredElement serviceConfiguration) {
+        try {
+            sendMessage(CommandConsumer.SET_SERVICE_STRUCTURE, marshal(serviceConfiguration, MonitoredElement.class));
+        } catch (JAXBException ex) {
+            log.error("Unable to marshall object of class " + serviceConfiguration.getClass() + " into String", ex);
+        }
+    }
 
-	public static void sendUpdatedServiceStructure(MonitoredElement serviceConfiguration) {
+    private <T> String marshal(Object source, Class<T> configurationClass) throws JAXBException {
+        JAXBContext jAXBContext = JAXBContext.newInstance(configurationClass);
+        StringWriter writer = new StringWriter();
+        jAXBContext.createMarshaller().marshal(source, writer);
+        return writer.toString();
+    }
 
-		try {
-			JAXBContext jAXBContext = JAXBContext.newInstance(MonitoredElement.class);
 
-			StringWriter writer = new StringWriter();
-			jAXBContext.createMarshaller().marshal(serviceConfiguration, writer);
+    private String marshalActionElement(String targetEntityID, String actionName) throws JAXBException {
+        ActionXML action = new ActionXML();
+        MonitoredElement element = new MonitoredElement(targetEntityID);
+        action.setElement(element);
+        action.addAction(actionName);
+        return marshal(action, ActionXML.class);
+    }
 
-			sendMessage(CommandConsumer.UPDATE_SERVICE_STRUCTURE, writer.getBuffer().toString());
-		} catch (JAXBException ex) {
-			Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.ERROR, null, ex);
-		}
-
-	}
-
-	public static void addExecutingAction(String targetEntityID, String actionName) {
-		try {
-			JAXBContext jAXBContext = JAXBContext.newInstance(ActionXML.class);
-			ActionXML action = new ActionXML();
-			MonitoredElement element = new MonitoredElement(targetEntityID);
-			action.setElement(element);
-			action.addAction(actionName);
-
-			StringWriter writer = new StringWriter();
-			jAXBContext.createMarshaller().marshal(action, writer);
-
-			sendMessage(CommandConsumer.ADD_EXECUTING_ACTION, writer.getBuffer().toString());
-		} catch (JAXBException ex) {
-			Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.ERROR, null, ex);
-		}
-
-	}
-
-	public static void removeExecutingAction(String targetEntityID, String actionName) {
-		try {
-			JAXBContext jAXBContext = JAXBContext.newInstance(ActionXML.class);
-			ActionXML action = new ActionXML();
-			MonitoredElement element = new MonitoredElement(targetEntityID);
-			action.setElement(element);
-			action.addAction(actionName);
-
-			StringWriter writer = new StringWriter();
-			jAXBContext.createMarshaller().marshal(action, writer);
-
-			sendMessage(CommandConsumer.REMOVE_EXECUTING_ACTION, writer.getBuffer().toString());
-		} catch (JAXBException ex) {
-			Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.ERROR, null, ex);
-		}
-	}
-
-	public static void sendServiceStructure(MonitoredElement serviceConfiguration) {
-		try {
-			JAXBContext jAXBContext = JAXBContext.newInstance(MonitoredElement.class);
-
-			StringWriter writer = new StringWriter();
-			jAXBContext.createMarshaller().marshal(serviceConfiguration, writer);
-
-			sendMessage(CommandConsumer.SET_SERVICE_STRUCTURE, writer.getBuffer().toString());
-		} catch (JAXBException ex) {
-			Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.ERROR, null, ex);
-		}
-	}
-
-	private static void sendMessage(String key, String value) {
-		/*ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(System.getProperty("ActiveMQProtocol", "tcp") + "://"
-				+ Configuration.getDataServiceIP() + ":" + Configuration.getDataServiceConfigurationPort());
-        */
-        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(System.getProperty("ActiveMQProtocol", "tcp") + "://"
-				+ "localhost" + ":" + "9124");
-
-		Connection connection = null;
-
-		do {
-			try {
-				connection = connectionFactory.createConnection();
-				connection.start();
-			} catch (JMSException e) {
-				Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.ERROR, "Waiting for MELA-DataService to start");
-				try {
-					Thread.sleep(5000);
-				} catch (InterruptedException e1) {
-				}
-			}
-		} while (connection == null);
-
-		try {
-
-			Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-			Destination destination = session.createQueue("MELADataService.Config");
-
-			MessageProducer producer = session.createProducer(destination);
-			producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-
-			MapMessage message = session.createMapMessage();
-			message.setObject(key, value);
-
-			producer.send(message);
-			session.close();
-			connection.close();
-		} catch (JMSException ex) {
-			Logger.getLogger(MelaDataServiceConfigurationAPIConnector.class.getName()).log(Level.ERROR, null, ex);
-		}
-	}
+    private void sendMessage(final String key, final String value) {
+        jmsTemplate.send(new MessageCreator() {
+            public Message createMessage(Session session) throws JMSException {
+                MapMessage message = session.createMapMessage();
+                message.setObject(key, value);
+                log.info("Sending message (key/value): {}/{}", key, value);
+                return message;
+            }
+        });
+    }
 
 }
