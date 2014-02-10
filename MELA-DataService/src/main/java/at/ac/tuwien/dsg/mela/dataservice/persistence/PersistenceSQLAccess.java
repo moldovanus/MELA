@@ -88,6 +88,11 @@ public class PersistenceSQLAccess {
         jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
+    public void writeMonitoringSequenceId(String sequenceId) {
+        /*String sql = "insert into MonitoringSeq (ID) VALUES (?)";
+        jdbcTemplate.update(sql, sequenceId);*/
+    }
+
 
     /**
      * @param monitoringData MonitoringData objects collected from different
@@ -183,7 +188,12 @@ public class PersistenceSQLAccess {
             }
         };
 
-        return jdbcTemplate.queryForObject(sql, rowMapper, monitoringSequenceID);
+        List<ElasticitySpace> spaces = jdbcTemplate.query(sql, rowMapper, monitoringSequenceID);
+        if (spaces.isEmpty()) {
+            return null;
+        } else {
+            return spaces.get(0);
+        }
     }
 
     public LightweightEncounterRateElasticityPathway extractLatestElasticityPathway() {

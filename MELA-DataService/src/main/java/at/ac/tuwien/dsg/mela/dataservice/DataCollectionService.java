@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -50,6 +51,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at *
  */
 @Service
+@DependsOn("persistenceSQLAccess")
 public class DataCollectionService {
 
     static final Logger log = LoggerFactory.getLogger(DataCollectionService.class);
@@ -115,8 +117,12 @@ public class DataCollectionService {
         // get latest config
         ConfigurationXMLRepresentation configurationXMLRepresentation = persistenceSQLAccess.getLatestConfiguration();
         serviceConfiguration = configurationXMLRepresentation.getServiceConfiguration();
+        persistenceSQLAccess.setMonitoringId(serviceConfiguration.getId());
+        persistenceSQLAccess.writeMonitoringSequenceId(serviceConfiguration.getId());
         setCompositionRulesConfiguration(configurationXMLRepresentation.getCompositionRulesConfiguration());
         requirements = configurationXMLRepresentation.getRequirements();
+
+
 
         startMonitoring();
     }
