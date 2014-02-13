@@ -19,9 +19,9 @@
  */
 package at.ac.tuwien.dsg.mela.analysisservice.control;
 
-import at.ac.tuwien.dsg.mela.analysisservice.utils.connectors.MelaDataServiceConfigurationAPIConnector;
-import at.ac.tuwien.dsg.mela.analysisservice.utils.converters.ConvertToJSON;
-import at.ac.tuwien.dsg.mela.analysisservice.utils.converters.ConvertToXML;
+import at.ac.tuwien.dsg.mela.analysisservice.connectors.MelaDataServiceConfigurationAPIConnector;
+import at.ac.tuwien.dsg.mela.analysisservice.util.converters.JsonConverter;
+import at.ac.tuwien.dsg.mela.analysisservice.util.converters.XmlConverter;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.LightweightEncounterRateElasticityPathway;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.som.Neuron;
@@ -68,10 +68,17 @@ public class ElasticityAnalysisManager {
 
     private MonitoredElement serviceConfiguration;
 
+    @Autowired
     private InstantMonitoringDataAnalysisEngine instantMonitoringDataAnalysisEngine;
 
     @Autowired
     private PersistenceSQLAccess persistenceSQLAccess;
+
+    @Autowired
+    private JsonConverter jsonConverter;
+
+    @Autowired
+    private XmlConverter xmlConverter;
 
     @PostConstruct
     public void init() {
@@ -262,7 +269,7 @@ public class ElasticityAnalysisManager {
             elSpaceJSON.put("name", "Service not found");
             return elSpaceJSON.toJSONString();
         } else {
-            String converted = ConvertToJSON.convertElasticityPathway(metrics, neurons);
+            String converted = jsonConverter.convertElasticityPathway(metrics, neurons);
             Date after = new Date();
             Logger.getLogger(this.getClass()).log(Level.DEBUG, "El Pathway cpt time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
             return converted;
@@ -309,7 +316,7 @@ public class ElasticityAnalysisManager {
 
             return elasticityPathwayXML;
         } else {
-            elasticityPathwayXML = ConvertToXML.convertElasticityPathwayToXML(metrics, neurons, element);
+            elasticityPathwayXML = xmlConverter.convertElasticityPathwayToXML(metrics, neurons, element);
             Date after = new Date();
             Logger.getLogger(this.getClass()).log(Level.DEBUG, "El Pathway cpt time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
             return elasticityPathwayXML;
@@ -333,7 +340,7 @@ public class ElasticityAnalysisManager {
         ElasticitySpace space = extractAndUpdateElasticitySpace();
 
 
-        String jsonRepr = ConvertToJSON.convertElasticitySpace(space, element);
+        String jsonRepr = jsonConverter.convertElasticitySpace(space, element);
 
         Date after = new Date();
         Logger.getLogger(this.getClass()).log(Level.DEBUG, "El Space cpt time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
@@ -350,7 +357,7 @@ public class ElasticityAnalysisManager {
 
         ElasticitySpace space = persistenceSQLAccess.extractLatestElasticitySpace();
 
-        ElasticitySpaceXML elasticitySpaceXML = ConvertToXML.convertElasticitySpaceToXMLCompletely(space, element);
+        ElasticitySpaceXML elasticitySpaceXML = xmlConverter.convertElasticitySpaceToXMLCompletely(space, element);
 
         Date after = new Date();
         Logger.getLogger(this.getClass()).log(Level.DEBUG, "El Space cpt time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
@@ -366,7 +373,7 @@ public class ElasticityAnalysisManager {
         Date before = new Date();
 
         ElasticitySpace space = persistenceSQLAccess.extractLatestElasticitySpace();
-        ElasticitySpaceXML elasticitySpaceXML = ConvertToXML.convertElasticitySpaceToXML(space, element);
+        ElasticitySpaceXML elasticitySpaceXML = xmlConverter.convertElasticitySpaceToXML(space, element);
 
         Date after = new Date();
         Logger.getLogger(this.getClass()).log(Level.DEBUG, "El Space cpt time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
@@ -378,7 +385,7 @@ public class ElasticityAnalysisManager {
         ServiceMonitoringSnapshot serviceMonitoringSnapshot = persistenceSQLAccess.extractLatestMonitoringData();
         Map<Requirement, Map<MonitoredElement, Boolean>> reqAnalysisResult = instantMonitoringDataAnalysisEngine.analyzeRequirements(serviceMonitoringSnapshot,
                 requirements).getRequirementsAnalysisResult();
-        String converted = ConvertToJSON.convertMonitoringSnapshot(serviceMonitoringSnapshot, requirements);
+        String converted = jsonConverter.convertMonitoringSnapshot(serviceMonitoringSnapshot, requirements);
         Date after = new Date();
         Logger.getLogger(this.getClass()).log(Level.DEBUG, "Get Mon Data time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
         return converted;
@@ -395,7 +402,7 @@ public class ElasticityAnalysisManager {
 
     public synchronized String getMetricCompositionRules() {
         if (compositionRulesConfiguration != null) {
-            return ConvertToJSON.convertToJSON(compositionRulesConfiguration.getMetricCompositionRules());
+            return jsonConverter.convertToJSON(compositionRulesConfiguration.getMetricCompositionRules());
         } else {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("name", "No composition rules yet");

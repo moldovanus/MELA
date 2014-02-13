@@ -18,20 +18,6 @@
 
 package at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.Priority;
-
 import at.ac.tuwien.dsg.mela.common.exceptions.DataAccessException;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MetricInfo;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoredElementData;
@@ -41,13 +27,19 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.requirements.MetricFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import java.util.*;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at
  **/
 @Service
 public abstract class AbstractDataAccess {
+
+    static final Logger log = LoggerFactory.getLogger(AbstractDataAccess.class);
 
 	protected Map<MonitoredElement.MonitoredElementLevel, List<MetricFilter>> metricFilters;
 	protected List<AbstractDataSource> dataSources;
@@ -168,7 +160,7 @@ public abstract class AbstractDataAccess {
 						freshestMonitoredData.put(abstractPollingDataSource, data);
 					} catch (DataAccessException e) {
 						// TODO Auto-generated catch block
-						Logger.getLogger(AbstractDataAccess.class).log(Level.ERROR, null, e);
+						log.error("Caught DataAccessException", e);
 					}
 
 				}
@@ -176,7 +168,7 @@ public abstract class AbstractDataAccess {
 			timer.scheduleAtFixedRate(dataCollectionTask, 0, abstractPollingDataSource.getPollingIntervalMs());
 		} else {
 			// TODO: needs to be implemented
-			Logger.getLogger(AbstractDataAccess.class).log(Priority.ERROR, "Not supporting yet data source of type " + dataSource.getClass().getName());
+			log.error("Not supporting yet data source of type " + dataSource.getClass().getName());
 		}
 		return timer;
 	}
@@ -192,7 +184,7 @@ public abstract class AbstractDataAccess {
 
 
 	/**
-	 * @param MonitoredElement
+	 * @param monitoredElement
 	 *            the MonitoredElement for which to retrieve the data
 	 * @return all the monitored metrics and their values for that particular
 	 *         MonitoredElement Does not return data also about the element
@@ -201,7 +193,7 @@ public abstract class AbstractDataAccess {
 	public abstract MonitoredElementMonitoringSnapshot getSingleElementMonitoredData(MonitoredElement monitoredElement);
 
 	/**
-	 * @param MonitoredElement
+	 * @param monitoredElement
 	 *            the element for which the available monitored metrics is
 	 *            retrieved
 	 * @return

@@ -20,7 +20,7 @@
 
     <servlet-mapping>
         <servlet-name>CXFServlet</servlet-name>
-        <url-pattern>/REST_WS/*</url-pattern>
+        <url-pattern>/REST_WS/*</url-pattern>  <!-- replace this with simply /api/* some time soon -->
     </servlet-mapping>
     <session-config>
         <session-timeout>30</session-timeout>

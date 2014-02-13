@@ -17,7 +17,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package at.ac.tuwien.dsg.mela.analysisservice.utils.converters;
+package at.ac.tuwien.dsg.mela.analysisservice.util.converters;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -37,12 +37,13 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticitySpace.ElasticitySpace;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.InMemoryEncounterRateElasticityPathway;
 import at.ac.tuwien.dsg.mela.common.elasticityAnalysis.concepts.elasticityPathway.som.Neuron;
+import org.springframework.stereotype.Component;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
- *
  */
-public class ConvertToCSV {
+@Component
+public class CsvConverter {
 
     /**
      * File arranged as LEVEL NAME, LEVEL INDEX, USAGE per group, and then
@@ -54,7 +55,7 @@ public class ConvertToCSV {
      * @param destinationFile
      * @throws IOException
      */
-    public static void writeCSVFromElasticitySituationsGroups(List<Neuron> groups, List<Metric> targetMetrics, String destinationFile) throws IOException {
+    public void writeCSVFromElasticitySituationsGroups(List<Neuron> groups, List<Metric> targetMetrics, String destinationFile) throws IOException {
         BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(destinationFile));
         String columns = null;
 
@@ -143,7 +144,7 @@ public class ConvertToCSV {
      * @param destinationFile
      * @throws IOException
      */
-    public static void writeCSVFromElasticitySignature(List<InMemoryEncounterRateElasticityPathway.SignatureEntry> elasticitySignature, String destinationFile) throws IOException {
+    public void writeCSVFromElasticitySignature(List<InMemoryEncounterRateElasticityPathway.SignatureEntry> elasticitySignature, String destinationFile) throws IOException {
         BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(destinationFile));
         String columns = null;
 
@@ -151,29 +152,9 @@ public class ConvertToCSV {
         List<InMemoryEncounterRateElasticityPathway.SignatureEntry> sortedAfterOccurrence = new ArrayList<InMemoryEncounterRateElasticityPathway.SignatureEntry>();
         sortedAfterOccurrence.addAll(elasticitySignature);
 
-//        //sort list after usage level
-//        Collections.sort(sortedAfterOccurrence, new Comparator<EncounterRateElasticitySignature.SignatureEntry>() {
-//            @Override
-//            public int compare(EncounterRateElasticitySignature.SignatureEntry signatureEntry, EncounterRateElasticitySignature.SignatureEntry signatureEntry1) {
-//                return signatureEntry.getMappedNeuron().getUsagePercentage().compareTo(signatureEntry1.getMappedNeuron().getUsagePercentage());
-//            }
-//        });
-
         //sort after values
         Collections.sort(sortedAfterOccurrence, new Comparator<InMemoryEncounterRateElasticityPathway.SignatureEntry>() {
             public int compare(InMemoryEncounterRateElasticityPathway.SignatureEntry signatureEntry, InMemoryEncounterRateElasticityPathway.SignatureEntry signatureEntry1) {
-//                Double sum1 = 0d;
-//                Double sum2 = 0d;
-//
-//                for(MetricValue value : signatureEntry.getClassifiedSituation().values()){
-//                    sum1 += Math.abs(Double.parseDouble(value.getValueRepresentation()));
-//                }
-//
-//                for(MetricValue value : signatureEntry1.getClassifiedSituation().values()){
-//                    sum2 += Math.abs(Double.parseDouble(value.getValueRepresentation()));
-//                }
-//
-//                return sum1.compareTo(sum2);
                 Neuron neuron1 = signatureEntry.getMappedNeuron();
                 Neuron neuron2 = signatureEntry1.getMappedNeuron();
                 if (neuron1.getUsageLevel().equals(neuron2.getUsageLevel())) {
@@ -248,18 +229,14 @@ public class ConvertToCSV {
      * Metric, Boundary UP, BOUNDARY LOW for all metrics, then if elastic or not
      * boolean, if elastic = 1, else -1 , elastic =
      *
-     * @param space the elasticity space from which we extract the info for the
-     * service element
+     * @param space           the elasticity space from which we extract the info for the
+     *                        service element
      * @param destinationFile the file in which we write the space
      */
-    public static void writeElasticitySpaceToCSV(MonitoredElement MonitoredElement, ElasticitySpace space, List<Metric> metricsToWrite, String destinationFile) throws IOException {
+    public void writeElasticitySpaceToCSV(MonitoredElement MonitoredElement, ElasticitySpace space, List<Metric> metricsToWrite, String destinationFile) throws IOException {
 
         BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(destinationFile));
 
-//        Map<Metric, List<MetricValue>> spaceForElement = space.getMonitoredDataForService(MonitoredElement);
-//        if (spaceForElement == null) {
-//            return;
-//        }
         Map<Metric, MetricValue[]> boundaries = new HashMap<Metric, MetricValue[]>();
         //write file columns
         {
@@ -310,16 +287,12 @@ public class ConvertToCSV {
     public static void writeWholeElasticitySpaceToCSV(MonitoredElement root, ElasticitySpace space, String destinationFile) throws IOException {
 
         for (MonitoredElement monitoredElement : root) {
-            if(monitoredElement.getLevel().equals(MonitoredElement.MonitoredElementLevel.VM)){
+            if (monitoredElement.getLevel().equals(MonitoredElement.MonitoredElementLevel.VM)) {
                 continue;
             }
 
             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(destinationFile + "_" + monitoredElement.getId() + ".csv"));
 
-//        Map<Metric, List<MetricValue>> spaceForElement = space.getMonitoredDataForService(MonitoredElement);
-//        if (spaceForElement == null) {
-//            return;
-//        }
             Map<Metric, MetricValue[]> boundaries = new HashMap<Metric, MetricValue[]>();
             Map<Metric, List<MetricValue>> dataForElement = space.getMonitoredDataForService(monitoredElement);
             //write file columns
@@ -367,68 +340,5 @@ public class ConvertToCSV {
             bufferedWriter.close();
         }
     }
-// /**
-//     * Metric, Boundary UP, BOUNDARY LOW for all metrics, then if elastic or not boolean, if elastic = 1, else -1
-//     * @param space the elasticity space from which we extract the info for the service element
-//     * @param MonitoredElement for which the space will be written
-//     * @param destinationFile the file in which we write the space
-//     */
-//    public static void writeElasticitySpaceToCSV(ElasticitySpace space, MonitoredElement MonitoredElement, String destinationFile) throws IOException {
-//
-//        BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(destinationFile));
-//
-//
-//        Map<Metric, List<MetricValue>> spaceForElement = space.getMonitoredDataForService(MonitoredElement);
-//        if(spaceForElement == null){
-//            return;
-//        }
-//        Map<Metric,MetricValue[]> boundaries = new HashMap<Metric, MetricValue[]>();
-//        //write file columns
-//        {
-//            String columns = "";
-//            for(Metric metric : spaceForElement.keySet()){
-//                columns+="\t"+metric.getName() + "\tBOUNDARY_U_"+metric.getName() + "\tBOUNDARY_L_"+metric.getName();
-//                boundaries.put(metric,space.getSpaceBoundaryForMetric(MonitoredElement,metric));
-//            }
-//
-//            columns+="\tELASTIC\tELASTIC_INT";
-//
-//            bufferedWriter.write(columns);
-//            bufferedWriter.newLine();
-//        }
-//
-//        List<String> lines = new ArrayList<String>();
-//        //classify all monitoring data
-//        //need to go trough all monitoring data, and push the classified items, such that I respect the monitored sequence.
-//        if (spaceForElement.values().size() == 0) {
-//            Logger.getLogger(ConvertToCSV.class.getName()).log(Level.ERROR, "Empty data to classify as elasticity signature");
-//            return;
-//        }
-//        int maxIndex = spaceForElement.values().iterator().next().size();
-//
-//        for (int i = 0; i < maxIndex; i++) {
-//            String line = "";
-//
-//            //add metric values to line
-//            for (Metric metric : spaceForElement.keySet()) {
-//                List<MetricValue> values = spaceForElement.get(metric);
-//
-//                //maybe we have diff value count for different metrics. Not sure when his might happen though.
-//                if (values.size() <= i - 1) {
-//                    Logger.getLogger(ConvertToCSV.class.getName()).log(Level.ERROR, "Less values for metric " + metric);
-//                    break;
-//                }
-//
-//                MetricValue[] boundaryForMetric = boundaries.get(metric);
-//                line +="\t" + values.get(i) + "\t"  + boundaryForMetric[1] + "\t" + boundaryForMetric[0];
-//
-//            }
-//
-//           line+=
-//
-//
-//        }
-//
-//
-//    }
+
 }

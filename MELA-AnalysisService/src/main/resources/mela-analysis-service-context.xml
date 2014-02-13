@@ -14,7 +14,7 @@
     <context:property-placeholder
             location="classpath*:mela-analysis-service.properties,classpath*:mela-data-service.properties"/>
 
-    <context:component-scan base-package="at.ac.tuwien.dsg.mela.analysisservice"/>
+    <context:component-scan base-package="at.ac.tuwien.dsg.mela"/>
 
     <import resource="classpath:META-INF/cxf/cxf.xml"/>
 

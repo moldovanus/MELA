@@ -34,7 +34,7 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDa
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractDataSource;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoredElementData;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MetricInfo;
-//import at.ac.tuwien.dsg.mela.dataservice.utils.Configuration;
+//import at.ac.tuwien.dsg.mela.dataservice.util.Configuration;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -24,5 +24,4 @@ package at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection;
  *
  */
 public abstract class AbstractPushDataSource implements AbstractDataSource{
-
 }

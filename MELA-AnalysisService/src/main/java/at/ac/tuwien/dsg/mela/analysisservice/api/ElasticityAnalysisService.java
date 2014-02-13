@@ -17,7 +17,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package at.ac.tuwien.dsg.mela.analysisservice.apis.webAPI;
+package at.ac.tuwien.dsg.mela.analysisservice.api;
 
 import at.ac.tuwien.dsg.mela.analysisservice.control.ElasticityAnalysisManager;
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;

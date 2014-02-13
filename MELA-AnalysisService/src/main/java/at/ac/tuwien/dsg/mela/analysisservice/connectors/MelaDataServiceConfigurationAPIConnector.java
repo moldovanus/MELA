@@ -1,4 +1,4 @@
-package at.ac.tuwien.dsg.mela.analysisservice.utils.connectors;
+package at.ac.tuwien.dsg.mela.analysisservice.connectors;
 
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.elasticity.ActionXML;

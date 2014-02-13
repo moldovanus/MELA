@@ -101,8 +101,6 @@ public class DataAggregationEngine {
      * data
      *
      * @param compositionRulesConfiguration rules to aggregate instant data
-     * @param compositionRules takes composition rules which specify for
-     * ServiceUNIT ID what rules to apply at the VM level.
      * @param serviceMonitoringSnapshots
      * @return
      */
@@ -250,8 +248,7 @@ public class DataAggregationEngine {
                             Map<MonitoredElement, List<MonitoredElementMonitoringSnapshot>> vmDataToAggregate = dataToAggregate.get(MonitoredElement.MonitoredElementLevel.VM);
 
                             //for each child apply aggregation rule
-                            if (vmDataToAggregate != null
-                                    || vmDataToAggregate.containsKey(child)) {
+                            if (vmDataToAggregate != null || vmDataToAggregate.containsKey(child)) {
                                 List<MonitoredElementMonitoringSnapshot> childData = vmDataToAggregate.get(child);
 
                                 //for each metric extract list of values to be aggregated

@@ -32,10 +32,8 @@ public class ConfigurationUtility {
 
     public ConfigurationXMLRepresentation createDefaultConfiguration() {
         ConfigurationXMLRepresentation configurationXMLRepresentation = new ConfigurationXMLRepresentation();
-        CompositionRulesConfiguration compositionRulesConfiguration = new CompositionRulesConfiguration();
-        Requirements requirements = new Requirements();
-        // create service with 1 topology and 1 service unit having * (all) VMs
 
+        // create service with 1 topology and 1 service unit having * (all) VMs
         MonitoredElement service = new MonitoredElement()
                 .withId("Service")
                 .withLevel(MonitoredElement.MonitoredElementLevel.SERVICE);
@@ -53,8 +51,8 @@ public class ConfigurationUtility {
         topology.addElement(serviceUnit);
 
         service = unmarshalFragment(MonitoredElement.class, "file://" + configDir + "/default/structure.xml");
-        compositionRulesConfiguration = unmarshalFragment(CompositionRulesConfiguration.class, "file://" + configDir + "/default/compositionRules.xml");
-        requirements = unmarshalFragment(Requirements.class, "file://" + configDir + "/default/requirements.xml");
+        CompositionRulesConfiguration compositionRulesConfiguration = unmarshalFragment(CompositionRulesConfiguration.class, "file://" + configDir + "/default/compositionRules.xml");
+        Requirements requirements = unmarshalFragment(Requirements.class, "file://" + configDir + "/default/requirements.xml");
 
         configurationXMLRepresentation.setServiceConfiguration(service);
         configurationXMLRepresentation.setCompositionRulesConfiguration(compositionRulesConfiguration);

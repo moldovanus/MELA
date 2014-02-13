@@ -19,11 +19,8 @@
  */
 package at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection;
 
-import java.util.Map;
-
 import at.ac.tuwien.dsg.mela.common.exceptions.DataAccessException;
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
-import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement.MonitoredElementLevel;
 
 /**
  * Author: Daniel Moldovan E-Mail: d.moldovan@dsg.tuwien.ac.at  *
