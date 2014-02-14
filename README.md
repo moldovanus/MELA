@@ -12,6 +12,9 @@ Those config files are using the standard Java properties format and their conte
 
 They are located in the `src/main/resources` folders in their related module base.
 
+Additionally, there are two environment variables that have to be set. `-DMELA_LOG_DIR=PATH_TO_LOGDIR` and   `-DMELA_CONFIG_DIR=$MELA_BASE_DIR/MELA-DataService/etc` where `$MELA_BASE_DIR` is the toplevel directory of the cloned MELA repository (e.g., `/home/user/MELA`)
+
+
 Datasource Configuration
 -----------------------------------------
 For now, adding MELA datasources is done by adding `<mela:ganglia-datasource>` elements in the application context configuration file of MELA-DataService (`mela-data-service-context.xml`). An example configuration for a local Ganglia installation would look like the following:
