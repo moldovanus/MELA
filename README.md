@@ -75,4 +75,6 @@ There is only one important configuration parameter which is located in `mela-da
 dataservice.configuration.uri=tcp://localhost:9125
 ```
 
-This controls the protocol, hostname and port that the broker and the JMS template will use.
+This controls the protocol, hostname and port that the broker and the JMS template will use. Other parameters, such
+as the `destination` queue, can be controlled in the `<jms:listener>` configuration (which is setup in the 
+application context, but those parameters rarely change.
