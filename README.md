@@ -19,5 +19,7 @@ of MELA-DataService (`mela-data-service-context.xml`). An example configuration 
 like the following:
 
 ```xml
-<mela:ganglia-datasource id="ganglia-local" host="localhost" port="8649" polling-interval-ms="5000"/>
+<mela:ganglia-datasource id="ganglia-local" 
+                         host="localhost" port="8649" 
+                         polling-interval-ms="5000"/>
 ```
