@@ -248,7 +248,7 @@ public class ElasticityAnalysisManager {
         }
 
         Map<Metric, List<MetricValue>> map = space.getMonitoredDataForService(element);
-        if (map != null && metrics == null) {
+        if (map != null) {
             metrics = new ArrayList<Metric>(map.keySet());
             // we need to know the number of weights to add in instantiation
             elasticityPathway = new LightweightEncounterRateElasticityPathway(metrics.size());
@@ -301,7 +301,7 @@ public class ElasticityAnalysisManager {
         ElasticitySpace space = persistenceSQLAccess.extractLatestElasticitySpace();
 
         Map<Metric, List<MetricValue>> map = space.getMonitoredDataForService(element);
-        if (map != null && metrics == null) {
+        if (map != null) {
             metrics = new ArrayList<Metric>(map.keySet());
             // we need to know the number of weights to add in instantiation
             elasticityPathway = new LightweightEncounterRateElasticityPathway(metrics.size());

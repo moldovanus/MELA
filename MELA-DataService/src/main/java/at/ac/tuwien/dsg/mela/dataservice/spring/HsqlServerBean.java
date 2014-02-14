@@ -64,7 +64,7 @@ public class HsqlServerBean implements InitializingBean, DisposableBean {
     }
 
 
-    public void destroy() {
+    public void destroy() throws InterruptedException {
         log.info("HSQL Server Shutdown sequence initiated");
         if (server != null) {
             server.signalCloseAllServerConnections();
@@ -80,8 +80,11 @@ public class HsqlServerBean implements InitializingBean, DisposableBean {
                     }
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
+                    log.error("Interrupted exception during HSQLDB server shutdown", e);
+                    throw e;
                 }
             }
+
             log.info("HSQL Server Shutdown completed");
             server = null;
         }

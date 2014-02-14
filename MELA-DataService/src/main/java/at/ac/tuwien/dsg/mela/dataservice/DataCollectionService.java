@@ -31,8 +31,6 @@ import at.ac.tuwien.dsg.mela.common.requirements.MetricFilter;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 import at.ac.tuwien.dsg.mela.dataservice.aggregation.DataAggregationEngine;
 import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationXMLRepresentation;
-import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.GangliaDataSource;
-import at.ac.tuwien.dsg.mela.dataservice.dataSource.model.GangliaDatasourceConfiguration;
 import at.ac.tuwien.dsg.mela.dataservice.persistence.PersistenceSQLAccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +41,6 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 

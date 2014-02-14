@@ -146,6 +146,7 @@ public class DataAccess extends AbstractDataAccess {
 
                         MonitoredElementMonitoringSnapshot monitoredElementMonitoringSnapshot = new MonitoredElementMonitoringSnapshot(monitoredElement, monitoredMetricValues);
                         // add to monitoring data tree structure
+
                         lowestLevelFoundMonitoredSnapshot.addChild(monitoredElementMonitoringSnapshot);
 
                         serviceMonitoringSnapshot.addMonitoredData(monitoredElementMonitoringSnapshot);

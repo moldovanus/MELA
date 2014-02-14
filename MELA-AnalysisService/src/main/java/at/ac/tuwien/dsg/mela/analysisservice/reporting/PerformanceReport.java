@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.springframework.stereotype.Component;
 
 /**
  *
@@ -34,12 +35,13 @@ import org.apache.log4j.Logger;
  * @E-mail: d.moldovan@dsg.tuwien.ac.at
  *
  */
+
+@Component
 public class PerformanceReport {
 
-    private Map<String, List<String>> reportEntries;
+    private Map<String, List<String>> reportEntries = new HashMap<String, List<String>>();
 
-    {
-        reportEntries = new HashMap<String, List<String>>();
+    public PerformanceReport() {
     }
 
     public PerformanceReport(String... reportFields) {

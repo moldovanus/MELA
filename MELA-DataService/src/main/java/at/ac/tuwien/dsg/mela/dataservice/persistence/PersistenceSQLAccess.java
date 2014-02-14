@@ -29,7 +29,6 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.ServiceMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationUtility;
 import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationXMLRepresentation;
-import org.hsqldb.lib.StringInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +37,6 @@ import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.support.AbstractLobCreatingPreparedStatementCallback;
-import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.jdbc.support.lob.LobCreator;
 import org.springframework.stereotype.Service;
@@ -47,11 +45,9 @@ import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import java.io.BufferedInputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -89,8 +85,14 @@ public class PersistenceSQLAccess {
     }
 
     public void writeMonitoringSequenceId(String sequenceId) {
-        /*String sql = "insert into MonitoringSeq (ID) VALUES (?)";
-        jdbcTemplate.update(sql, sequenceId);*/
+
+        String checkIfExistsSql = "select count(1) from MonitoringSeq where ID=?";
+        long result = jdbcTemplate.queryForObject(checkIfExistsSql, Long.class, sequenceId);
+        if (result < 1) {
+            log.debug("Inserting sequenceId into MontoringSeq");
+            String sql = "insert into MonitoringSeq (ID) VALUES (?)";
+            jdbcTemplate.update(sql, sequenceId);
+        }
     }
 
 

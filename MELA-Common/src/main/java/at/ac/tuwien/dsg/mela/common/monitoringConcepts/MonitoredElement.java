@@ -148,10 +148,7 @@ public class MonitoredElement implements Iterable<MonitoredElement>, Serializabl
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-//        result = 31 * result + (ip != null ? ip.hashCode() : 0);
-//        result = 31 * result + (name != null ? name.hashCode() : 0);
-        return result;
+        return id != null ? id.hashCode() : 0;
     }
 
     /**

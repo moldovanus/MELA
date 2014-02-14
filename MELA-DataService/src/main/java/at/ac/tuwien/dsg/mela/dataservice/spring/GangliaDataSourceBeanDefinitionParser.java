@@ -1,7 +1,6 @@
 package at.ac.tuwien.dsg.mela.dataservice.spring;
 
 import at.ac.tuwien.dsg.mela.dataservice.dataSource.impl.GangliaDataSource;
-import at.ac.tuwien.dsg.mela.dataservice.dataSource.model.GangliaDatasourceConfiguration;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.util.StringUtils;

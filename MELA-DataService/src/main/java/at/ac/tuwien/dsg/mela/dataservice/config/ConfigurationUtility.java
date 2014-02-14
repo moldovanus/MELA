@@ -2,7 +2,6 @@ package at.ac.tuwien.dsg.mela.dataservice.config;
 
 import at.ac.tuwien.dsg.mela.common.configuration.metricComposition.CompositionRulesConfiguration;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
-import at.ac.tuwien.dsg.mela.common.requirements.Requirement;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +11,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import javax.xml.bind.JAXBContext;
-import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -61,6 +59,7 @@ public class ConfigurationUtility {
         return configurationXMLRepresentation;
     }
 
+    @SuppressWarnings("unchecked")
     private <T> T unmarshalFragment(Class<T> fragmentType, String filename) {
         try {
             JAXBContext jAXBContext = JAXBContext.newInstance(fragmentType);

@@ -88,7 +88,7 @@ public class GangliaDataSource extends AbstractPollingDataSource {
             p.destroy();
 
             //if ganglia does not respond
-            if (content == null || content.length() == 0) {
+            if (content.length() == 0) {
                 Logger.getLogger(this.getClass()).log(Level.WARN, "" + "Unable to execute " + cmd);
                 return new MonitoringData();
             }

@@ -16,8 +16,6 @@
  */
 package at.ac.tuwien.dsg.mela.dataservice.dataSource.impl;
 
-import java.util.Map;
-
 import at.ac.tuwien.dsg.mela.common.jaxbEntities.monitoringConcepts.MonitoringData;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.dataCollection.AbstractPollingDataSource;
 import at.ac.tuwien.dsg.mela.common.exceptions.DataAccessException;
