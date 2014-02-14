@@ -28,6 +28,10 @@ import at.ac.tuwien.dsg.mela.common.monitoringConcepts.Metric;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElement;
 import at.ac.tuwien.dsg.mela.common.monitoringConcepts.MonitoredElementMonitoringSnapshot;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +40,7 @@ import org.springframework.stereotype.Service;
 import javax.ws.rs.*;
 import javax.ws.rs.ext.Provider;
 import javax.xml.bind.JAXBContext;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,6 +52,7 @@ import java.util.List;
 @Service
 @Provider
 @Path("/")
+@Api(value = "/", description = "The ElasticityAnalysisService is the entry point for all elasticity related monitoring data")
 public class ElasticityAnalysisService {
 
     @Autowired
@@ -59,6 +65,13 @@ public class ElasticityAnalysisService {
     @Path("/elasticitypathway")
     @Consumes("application/xml")
     @Produces("application/json")
+    @ApiOperation(value = "Retrieve elasticity pathway",
+            notes = "Retrieves the elasticity pathway for the given MonitoredElement",
+            response = String.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 400, message = "Invalid ID supplied"),
+            @ApiResponse(code = 404, message = "Service element not found in service structure")
+    })
     public String getElasticityPathwayInJSON(MonitoredElement element) {
         return systemControl.getElasticityPathway(element);
     }

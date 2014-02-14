@@ -37,9 +37,9 @@ import at.ac.tuwien.dsg.mela.common.requirements.Requirement;
 import at.ac.tuwien.dsg.mela.common.requirements.Requirements;
 import at.ac.tuwien.dsg.mela.dataservice.config.ConfigurationXMLRepresentation;
 import at.ac.tuwien.dsg.mela.dataservice.persistence.PersistenceSQLAccess;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -55,6 +55,8 @@ import java.util.*;
  */
 @Service
 public class ElasticityAnalysisManager {
+
+    static final Logger log = LoggerFactory.getLogger(ElasticityAnalysisManager.class);
 
     @Value("${analysisservice.elasticityanalysis:true}")
     private boolean elasticityAnalysisEnabled;
@@ -222,7 +224,7 @@ public class ElasticityAnalysisManager {
         // if no service configuration, we can't have elasticity space function
         // if no compositionRulesConfiguration we have no data
         if (!elasticityAnalysisEnabled || serviceConfiguration == null && compositionRulesConfiguration != null) {
-            Logger.getLogger(this.getClass()).log(Level.WARN, "Elasticity analysis disabled, or no service configuration or composition rules configuration");
+            log.warn("Elasticity analysis disabled, or no service configuration or composition rules configuration");
             JSONObject elSpaceJSON = new JSONObject();
             elSpaceJSON.put("name", "ElPathway");
             return elSpaceJSON.toJSONString();
@@ -241,7 +243,7 @@ public class ElasticityAnalysisManager {
         ElasticitySpace space = persistenceSQLAccess.extractLatestElasticitySpace();
 
         if (space == null) {
-            Logger.getLogger(this.getClass()).log(Level.ERROR, "Elasticity Space returned is null");
+            log.error("Elasticity Space returned is null");
             JSONObject elSpaceJSON = new JSONObject();
             elSpaceJSON.put("name", "ElPathway");
             return elSpaceJSON.toJSONString();
@@ -253,7 +255,7 @@ public class ElasticityAnalysisManager {
             // we need to know the number of weights to add in instantiation
             elasticityPathway = new LightweightEncounterRateElasticityPathway(metrics.size());
         } else {
-            Logger.getLogger(this.getClass()).log(Level.ERROR, "Elasticity Space not found for " + element.getId());
+            log.error("Elasticity Space not found for " + element.getId());
             JSONObject elSpaceJSON = new JSONObject();
             elSpaceJSON.put("name", "ElPathway");
             return elSpaceJSON.toJSONString();
@@ -263,15 +265,15 @@ public class ElasticityAnalysisManager {
 
         List<Neuron> neurons = elasticityPathway.getSituationGroups();
         if (metrics == null) {
-            Logger.getLogger(this.getClass()).log(Level.ERROR,
-                    "Service Element " + element.getId() + " at level " + element.getLevel() + " was not found in service structure");
-            JSONObject elSpaceJSON = new JSONObject();
-            elSpaceJSON.put("name", "Service not found");
-            return elSpaceJSON.toJSONString();
+            log.error("Service Element " + element.getId() + " at level " + element.getLevel() + " was not found in service structure");
+            /*JSONObject elSpaceJSON = new JSONObject();
+            elSpaceJSON.put("name", "Service not found"); // todo throw a ServiceNotFoundException that we can map and return a 404 in the REST API
+            return elSpaceJSON.toJSONString();*/
+            throw new ServiceElementNotFoundException(element);
         } else {
             String converted = jsonConverter.convertElasticityPathway(metrics, neurons);
             Date after = new Date();
-            Logger.getLogger(this.getClass()).log(Level.DEBUG, "El Pathway cpt time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+            log.debug("El Pathway cpt time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
             return converted;
         }
 
@@ -284,7 +286,7 @@ public class ElasticityAnalysisManager {
         // if no service configuration, we can't have elasticity space function
         // if no compositionRulesConfiguration we have no data
         if (!elasticityAnalysisEnabled || serviceConfiguration == null && compositionRulesConfiguration != null) {
-            Logger.getLogger(this.getClass()).log(Level.WARN, "Elasticity analysis disabled, or no service configuration or composition rules configuration");
+            log.warn("Elasticity analysis disabled, or no service configuration or composition rules configuration");
             return elasticityPathwayXML;
         }
 
@@ -311,14 +313,12 @@ public class ElasticityAnalysisManager {
 
         List<Neuron> neurons = elasticityPathway.getSituationGroups();
         if (metrics == null) {
-            Logger.getLogger(this.getClass()).log(Level.ERROR,
-                    "Service Element " + element.getId() + " at level " + element.getLevel() + " was not found in service structure");
-
+            log.error("Service Element " + element.getId() + " at level " + element.getLevel() + " was not found in service structure");
             return elasticityPathwayXML;
         } else {
             elasticityPathwayXML = xmlConverter.convertElasticityPathwayToXML(metrics, neurons, element);
             Date after = new Date();
-            Logger.getLogger(this.getClass()).log(Level.DEBUG, "El Pathway cpt time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+            log.debug("El Pathway cpt time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
             return elasticityPathwayXML;
         }
 
@@ -329,21 +329,17 @@ public class ElasticityAnalysisManager {
         // if no service configuration, we can't have elasticity space function
         // if no compositionRulesConfiguration we have no data
         if (!elasticityAnalysisEnabled || serviceConfiguration == null && compositionRulesConfiguration != null) {
-            Logger.getLogger(this.getClass()).log(Level.WARN, "Elasticity analysis disabled, or no service configuration or composition rules configuration");
+            log.warn("Elasticity analysis disabled, or no service configuration or composition rules configuration");
             JSONObject elSpaceJSON = new JSONObject();
             elSpaceJSON.put("name", "ElSpace");
             return elSpaceJSON.toJSONString();
         }
 
         Date before = new Date();
-
         ElasticitySpace space = extractAndUpdateElasticitySpace();
-
-
         String jsonRepr = jsonConverter.convertElasticitySpace(space, element);
-
         Date after = new Date();
-        Logger.getLogger(this.getClass()).log(Level.DEBUG, "El Space cpt time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+        log.debug("El Space cpt time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
         return jsonRepr;
     }
 
@@ -352,15 +348,11 @@ public class ElasticityAnalysisManager {
      * @return also contains the monitored values
      */
     public synchronized ElasticitySpaceXML getCompleteElasticitySpaceXML(MonitoredElement element) {
-
         Date before = new Date();
-
         ElasticitySpace space = persistenceSQLAccess.extractLatestElasticitySpace();
-
         ElasticitySpaceXML elasticitySpaceXML = xmlConverter.convertElasticitySpaceToXMLCompletely(space, element);
-
         Date after = new Date();
-        Logger.getLogger(this.getClass()).log(Level.DEBUG, "El Space cpt time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+        log.debug("El Space cpt time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
         return elasticitySpaceXML;
     }
 
@@ -369,14 +361,11 @@ public class ElasticityAnalysisManager {
      * @return contains only the Metric and their ElasticityBoundaries
      */
     public synchronized ElasticitySpaceXML getElasticitySpaceXML(MonitoredElement element) {
-
         Date before = new Date();
-
         ElasticitySpace space = persistenceSQLAccess.extractLatestElasticitySpace();
         ElasticitySpaceXML elasticitySpaceXML = xmlConverter.convertElasticitySpaceToXML(space, element);
-
         Date after = new Date();
-        Logger.getLogger(this.getClass()).log(Level.DEBUG, "El Space cpt time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+        log.debug("El Space cpt time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
         return elasticitySpaceXML;
     }
 
@@ -387,16 +376,15 @@ public class ElasticityAnalysisManager {
                 requirements).getRequirementsAnalysisResult();
         String converted = jsonConverter.convertMonitoringSnapshot(serviceMonitoringSnapshot, requirements);
         Date after = new Date();
-        Logger.getLogger(this.getClass()).log(Level.DEBUG, "Get Mon Data time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+        log.debug("Get Mon Data time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
         return converted;
     }
 
     public synchronized MonitoredElement getLatestServiceStructure() {
         Date before = new Date();
         ServiceMonitoringSnapshot serviceMonitoringSnapshot = persistenceSQLAccess.extractLatestMonitoringData();
-
         Date after = new Date();
-        Logger.getLogger(this.getClass()).log(Level.DEBUG, "Get Mon Data time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
+        log.debug("Get Mon Data time in ms:  " + new Date(after.getTime() - before.getTime()).getTime());
         return serviceMonitoringSnapshot.getMonitoredService();
     }
 

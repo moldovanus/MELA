@@ -18,7 +18,7 @@
 
     <!--<jdbc:embedded-database id="dataSource" type="HSQL"/>-->
 
-
+    <!-- this configures a standalone HSQLDB server instance that is started during application startup -->
     <bean id="database" class="at.ac.tuwien.dsg.mela.dataservice.spring.HsqlServerBean" lazy-init="false">
         <property name="serverProperties">
             <props>
@@ -32,7 +32,6 @@
     <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" depends-on="database">
         <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
         <property name="url" value="jdbc:hsqldb:hsql://localhost:9001/mela"/>
-        <!--    <property name="url" value="jdbc:hsqldb:mem:dataSource"/>-->
         <property name="username" value="SA"/>
         <property name="password" value=""/>
     </bean>
