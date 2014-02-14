@@ -67,7 +67,7 @@ Add/Uncomment the following parts in `mela-data-service-context.xml` (and commen
 </bean>
 ```
 
-### Configuring AMQ and JMS related settings
+### Configuring ActiveMQ and JMS related settings
 There is only one important configuration parameter which is located in `mela-data-service.properties` as well as 
 `mela-analysis-service.properties`:
 
