@@ -58,7 +58,8 @@ Add/Uncomment the following parts in `mela-data-service-context.xml` (and commen
 </bean>
 
 <!-- this datasource is injected and used by JdbcTemplate -->
-<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" 
+<bean id="dataSource" 
+      class="org.springframework.jdbc.datasource.DriverManagerDataSource" 
       depends-on="database">
     <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
     <property name="url" value="jdbc:hsqldb:hsql://localhost:9001/mela"/>
