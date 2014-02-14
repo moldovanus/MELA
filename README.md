@@ -1,5 +1,5 @@
-MELA
-====
+MELA-Fork
+=========
 Major changes in this fork include the use of Spring Framework as well as a dedicated namespace for configuring 
 various MELA aspects (e.g. datasources)
 
@@ -65,6 +65,14 @@ Add/Uncomment the following parts in `mela-data-service-context.xml` (and commen
     <property name="username" value="SA"/>
     <property name="password" value=""/>
 </bean>
+```
 
+### Configuring AMQ and JMS related settings
+There is only one important configuration parameter which is located in `mela-data-service.properties` as well as 
+`mela-analysis-service.properties`:
 
+```properties
+dataservice.configuration.uri=tcp://localhost:9125
+```
 
+This controls the protocol, hostname and port that the broker and the JMS template will use.
