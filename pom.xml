@@ -5,7 +5,7 @@
     <groupId>at.ac.tuwien.mela</groupId>
     <artifactId>MELA-Core-Pom</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>MELA-Core</name>
+    <name>MELA-Core-Refactored</name>
     <description>The core components of MELA </description>
 
     <properties>
